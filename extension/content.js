@@ -196,6 +196,13 @@
     { d: "M3.9 5.5h5.2c.8 0 1.4.6 1.4 1.4v5.2c0 .8-.6 1.4-1.4 1.4H3.9c-.8 0-1.4-.6-1.4-1.4V6.9c0-.8.6-1.4 1.4-1.4Z" },
   ];
 
+  const SLIDERS_ICON = [
+    { d: "M3 4.5h3.1M9.9 4.5H13M3 8h4.6M11.4 8H13M3 11.5h2.1M8.9 11.5H13" },
+    { d: "M6.6 3.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z", fill: true },
+    { d: "M9.4 6.75a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z", fill: true },
+    { d: "M5.4 10.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z", fill: true },
+  ];
+
   function build() {
     if (document.getElementById(HOST_ID)) {
       return false;
@@ -240,6 +247,19 @@
     const spacer = el("span", "spacer");
     const icons = el("span", "icons");
 
+    const settingsBtn = el("button", "icon");
+    settingsBtn.type = "button";
+    settingsBtn.title = "设置";
+    settingsBtn.setAttribute("aria-label", "设置");
+    settingsBtn.appendChild(icon(SLIDERS_ICON));
+    settingsBtn.addEventListener("click", () => {
+      try {
+        browser.runtime.sendMessage({ type: "open-options" });
+      } catch (_error) {
+        // Background is not available.
+      }
+    });
+
     stopBtn = el("button", "icon");
     stopBtn.type = "button";
     stopBtn.title = "停止";
@@ -266,7 +286,7 @@
     closeBtn.appendChild(icon([{ d: "M4.5 4.5l7 7M11.5 4.5l-7 7" }]));
     closeBtn.addEventListener("click", closePanel);
 
-    icons.append(stopBtn, copyBtn, closeBtn);
+    icons.append(settingsBtn, stopBtn, copyBtn, closeBtn);
     head.append(brand, title, modelEl, spacer, icons);
 
     bodyEl = el("div", "body");

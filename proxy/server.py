@@ -23,6 +23,8 @@ import json
 import os
 import re
 import sys
+import tempfile
+import threading
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -47,6 +49,21 @@ DEFAULT_PROMPT = (
 )
 
 SECRET_RE = re.compile(r"(?i)((?:api[_-]?key|authorization|bearer)\s*[:=]\s*)([^\s,;\"'}]+)")
+SETTINGS_LOCK = threading.Lock()
+
+
+def save_config(cfg: dict[str, Any]) -> None:
+    directory = CONFIG_PATH.parent
+    fd, tmp = tempfile.mkstemp(dir=directory, prefix=".config.")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(cfg, fh, ensure_ascii=False, indent=2)
+            fh.write("\n")
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, CONFIG_PATH)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
 
 
 def die(message: str) -> NoReturn:
@@ -142,12 +159,141 @@ class Handler(BaseHTTPRequestHandler):
             text = text.replace(key, "***")
         return SECRET_RE.sub(r"\1***", text)
 
+    def _settings(self) -> dict[str, Any]:
+        upstream = self.cfg["upstream"]
+        return {
+            "model": upstream.get("model"),
+            "reasoning_effort": upstream.get("reasoning_effort"),
+            "temperature": upstream.get("temperature"),
+            "max_tokens": upstream.get("max_tokens"),
+            "request_options": upstream.get("request_options") or {},
+            "system_prompt": self.cfg.get("system_prompt"),
+            "max_selection_chars": self.cfg.get("max_selection_chars"),
+            "readonly": ["api_key", "base_url", "extra_headers"],
+        }
+
+    def _apply_settings(self, body: Any) -> None:
+        if not isinstance(body, dict):
+            self._json(400, {"error": "body must be a JSON object"})
+            return
+        with SETTINGS_LOCK:
+            try:
+                disk = json.loads(CONFIG_PATH.read_text("utf-8"))
+            except (OSError, ValueError) as exc:
+                self._json(500, {"error": f"读取配置失败：{exc}"})
+                return
+            if not isinstance(disk, dict):
+                self._json(500, {"error": "配置格式错误"})
+                return
+            upstream = disk.setdefault("upstream", {})
+            try:
+                for key, value in body.items():
+                    if key == "system_prompt":
+                        if not isinstance(value, str) or not value.strip():
+                            raise ValueError("system_prompt 不能为空")
+                        if len(value) > 8000:
+                            raise ValueError("system_prompt 过长（上限 8000 字符）")
+                        disk["system_prompt"] = value.strip()
+                    elif key == "max_selection_chars":
+                        if isinstance(value, bool):
+                            raise ValueError("max_selection_chars 必须是整数")
+                        count = int(value)
+                        if not 200 <= count <= 50000:
+                            raise ValueError("max_selection_chars 需在 200–50000 之间")
+                        disk["max_selection_chars"] = count
+                    elif key == "model":
+                        if not isinstance(value, str) or not value.strip():
+                            raise ValueError("model 不能为空")
+                        upstream["model"] = value.strip()
+                    elif key == "reasoning_effort":
+                        if value in (None, ""):
+                            upstream["reasoning_effort"] = None
+                        elif isinstance(value, str) and len(value) <= 32:
+                            upstream["reasoning_effort"] = value.strip() or None
+                        else:
+                            raise ValueError("reasoning_effort 必须是字符串或 null")
+                    elif key == "temperature":
+                        if value is None:
+                            upstream["temperature"] = None
+                        else:
+                            if isinstance(value, bool):
+                                raise ValueError("temperature 必须是数字或 null")
+                            number = float(value)
+                            if not 0 <= number <= 2:
+                                raise ValueError("temperature 需在 0–2 之间")
+                            upstream["temperature"] = number
+                    elif key == "max_tokens":
+                        if value in (None, ""):
+                            upstream["max_tokens"] = None
+                        else:
+                            if isinstance(value, bool):
+                                raise ValueError("max_tokens 必须是整数或 null")
+                            count = int(value)
+                            if not 1 <= count <= 32768:
+                                raise ValueError("max_tokens 需在 1–32768 之间")
+                            upstream["max_tokens"] = count
+                    elif key == "request_options":
+                        if not isinstance(value, dict):
+                            raise ValueError("request_options 必须是 JSON 对象")
+                        upstream["request_options"] = value
+                    # api_key / base_url / extra_headers 不能通过此接口修改
+            except (TypeError, ValueError) as exc:
+                self._json(400, {"error": str(exc)})
+                return
+            try:
+                save_config(disk)
+                new_cfg = load_config()
+            except SystemExit:
+                self._json(500, {"error": "配置校验失败，未生效"})
+                return
+            type(self).cfg = new_cfg
+        self._json(200, self._settings())
+
     # ---------------------------------------------------------------- routes
     def do_GET(self) -> None:
         if self.path == "/health":
             self._json(200, {"ok": True})
+        elif self.path == "/v1/settings":
+            if not self._host_allowed():
+                self._json(403, {"error": "forbidden host"})
+                return
+            if not self._origin_allowed():
+                self._json(403, {"error": "forbidden origin"})
+                return
+            self._json(200, self._settings())
         else:
             self._json(404, {"error": "not found"})
+
+    def do_PUT(self) -> None:
+        if self.path != "/v1/settings":
+            self._json(404, {"error": "not found"})
+            return
+        if not self._host_allowed():
+            self._json(403, {"error": "forbidden host"})
+            return
+        if not self._origin_allowed():
+            self._json(403, {"error": "forbidden origin"})
+            return
+        content_type = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        if content_type != "application/json":
+            self._json(415, {"error": "content-type must be application/json"})
+            return
+        try:
+            length = int(self.headers.get("Content-Length") or "0")
+        except ValueError:
+            length = 0
+        if length <= 0:
+            self._json(400, {"error": "empty body"})
+            return
+        if length > MAX_BODY:
+            self._json(413, {"error": "body too large"})
+            return
+        try:
+            body = json.loads(self.rfile.read(length).decode("utf-8"))
+        except (OSError, ValueError):
+            self._json(400, {"error": "invalid JSON"})
+            return
+        self._apply_settings(body)
 
     def do_OPTIONS(self) -> None:
         self._json(405, {"error": "method not allowed"})

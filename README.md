@@ -77,6 +77,13 @@ systemctl --user status askai
 
 配置示例见 `proxy/config.example.json`。`request_options` 里可放任意 OpenAI 兼容字段，例如 `verbosity`、`top_p`。
 
+## 配置
+
+- 打开方式：面板右上角 ⚙，或 `about:addons` → AskAI 划词 → 首选项。
+- 可改：模型、思考深度、温度、max_tokens、系统提示词、request_options；保存后立即生效。
+- 不可在此改：API Key、`base_url`、`extra_headers`。它们仍由 `./set-key.sh` 或 `~/.config/askai/config.json` 管理。
+- 扩展只调用本机的 `/v1/settings`；代理只接受这几个非敏感字段，不能把 key 重定向到别处。
+
 ## 常驻运行（systemd user）
 
 `./install.sh` 写入单元并 `daemon-reload`，`./set-key.sh` 负责 `enable --now`。单元内容：

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh">
+<meta charset="utf-8">
+<title>AskAI 设置</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f7f8fb; --card: #fff; --fg: #17181c; --muted: #6f7480;
+    --border: #e2e5ec; --accent: #5457d6; --accent-fg: #fff;
+    --input: #fbfbfd; --shadow: 0 10px 30px rgba(17, 24, 39, .08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15171c; --card: #1c1e24; --fg: #e7e9ee; --muted: #98a0ad;
+      --border: #2f333c; --accent: #8b8cf8; --accent-fg: #14151a;
+      --input: #15171c; --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 24px; background: var(--bg); color: var(--fg);
+    font: 13.5px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
+  }
+  main {
+    max-width: 620px; margin: 0 auto; padding: 22px 24px 20px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow);
+  }
+  h1 { margin: 0 0 4px; font-size: 16px; letter-spacing: .01em; }
+  .hint { margin: 0 0 18px; color: var(--muted); font-size: 12px; }
+  form { display: flex; flex-direction: column; gap: 14px; }
+  label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
+  .row { display: grid; grid-template-columns: 1.4fr .8fr .8fr; gap: 12px; }
+  input, textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px;
+    background: var(--input); color: var(--fg);
+    font: 13px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
+  }
+  textarea { resize: vertical; min-height: 84px; }
+  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .actions { display: flex; align-items: center; gap: 12px; }
+  button {
+    padding: 7px 16px; border: 0; border-radius: 9px; cursor: pointer;
+    background: var(--accent); color: var(--accent-fg); font: 600 12.5px/1.4 inherit;
+  }
+  button:disabled { opacity: .6; cursor: default; }
+  #status { font-size: 12px; color: var(--muted); }
+  #status.err { color: #d23b3b; }
+  .foot { margin: 16px 0 0; color: var(--muted); font-size: 11.5px; }
+  code { font: 11.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+</style>
+<body>
+<main>
+  <h1>AskAI 设置</h1>
+  <p class="hint">保存后立即生效。API Key 与接口地址不在这里配置，避免扩展接触密钥。</p>
+  <form id="form">
+    <label>模型
+      <input id="model" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="row">
+      <label>思考深度
+        <input id="effort" placeholder="low / high / max，留空默认" autocomplete="off" spellcheck="false">
+      </label>
+      <label>温度
+        <input id="temperature" type="number" min="0" max="2" step="0.1">
+      </label>
+      <label>max_tokens
+        <input id="max_tokens" type="number" min="1" max="32768">
+      </label>
+    </div>
+    <label>系统提示词
+      <textarea id="system_prompt" rows="6" spellcheck="false"></textarea>
+    </label>
+    <label>request_options（高级，JSON）
+      <textarea id="request_options" rows="4" spellcheck="false"></textarea>
+    </label>
+    <div class="actions">
+      <button id="save" type="submit">保存</button>
+      <span id="status" role="status"></span>
+    </div>
+  </form>
+  <p class="foot">Key / base_url / extra_headers 仍由 <code>~/.config/askai/config.json</code> 管理。</p>
+</main>
+<script src="options.js"></script>
+</body>
+</html>

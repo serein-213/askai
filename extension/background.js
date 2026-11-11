@@ -4,6 +4,12 @@ const PROXY = "http://127.0.0.1:8787";
 
 // One port per open panel. The page only ever talks to this background page,
 // which in turn only talks to 127.0.0.1:8787.
+browser.runtime.onMessage.addListener((message) => {
+  if (message && message.type === "open-options") {
+    browser.runtime.openOptionsPage();
+  }
+});
+
 browser.runtime.onConnect.addListener((port) => {
   if (port.name !== "ask") {
     return;
