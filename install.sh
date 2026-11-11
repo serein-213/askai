@@ -7,6 +7,22 @@ config="$config_dir/config.json"
 unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 unit="$unit_dir/askai.service"
 
+force=0
+for arg in "$@"; do
+  case "$arg" in
+    --force) force=1 ;;
+    -h|--help)
+      echo "用法: $0 [--force]"
+      echo "  --force  重新生成 systemd 单元"
+      exit 0
+      ;;
+    *) echo "未知参数: $arg" >&2; exit 2 ;;
+  esac
+done
+
+python_bin="$(command -v python3 || true)"
+[[ -n "$python_bin" ]] || { echo "找不到 python3" >&2; exit 1; }
+
 mkdir -p "$config_dir"
 chmod 700 "$config_dir"
 
@@ -19,8 +35,8 @@ fi
 chmod 600 "$config"
 
 mkdir -p "$unit_dir"
-if [[ -f "$unit" ]]; then
-  echo "systemd 单元已存在：$unit"
+if [[ -f "$unit" && "$force" -eq 0 ]]; then
+  echo "systemd 单元已存在：$unit（更新用 ./install.sh --force）"
 else
   cat > "$unit" <<EOF
 [Unit]
@@ -32,8 +48,8 @@ StartLimitBurst=5
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 $here/proxy/server.py
-Environment=ASKAI_CONFIG=$config
+ExecStart=$python_bin "$here/proxy/server.py"
+Environment="ASKAI_CONFIG=$config"
 Environment=PYTHONDONTWRITEBYTECODE=1
 Restart=on-failure
 RestartSec=3
@@ -41,7 +57,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=$config_dir
+ReadWritePaths="$config_dir"
 
 [Install]
 WantedBy=default.target

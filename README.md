@@ -86,7 +86,7 @@ systemctl --user status askai
 
 ## 常驻运行（systemd user）
 
-`./install.sh` 写入单元并 `daemon-reload`，`./set-key.sh` 负责 `enable --now`。单元内容：
+`./install.sh` 写入单元并 `daemon-reload`，`./set-key.sh` 负责 `enable --now`。单元按安装者的 `$HOME` / `$XDG_CONFIG_HOME` / Python 路径生成；已装过旧版可运行 `./install.sh --force` 重新生成。单元内容：
 
 ```ini
 [Unit]
