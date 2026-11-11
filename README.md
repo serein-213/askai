@@ -43,16 +43,23 @@ systemctl --user status askai
 - 永久安装需 AMO 签名。`WEB_EXT_API_KEY` / `WEB_EXT_API_SECRET` 是 addons.mozilla.org 的个人签名凭据（JWT issuer / secret），在 [Developer Hub → Tools → API keys](https://addons.mozilla.org/developers/addon/api/key/) 生成，可随时吊销；它**不是**模型 API key。
 
 ```bash
-export WEB_EXT_API_KEY='user:123456:789'
-export WEB_EXT_API_SECRET='...'
-npx web-ext build --source-dir extension --artifacts-dir dist --overwrite-dest
-npx web-ext sign --channel unlisted --artifacts-dir dist
-# 下载签名后的 xpi，用 Firefox 打开并确认安装
+./sign.sh      # 提示输入 AMO key/secret（不回显，不进 shell history）
+# 等价于（已 export 凭据时）：
+npx web-ext sign --source-dir extension --channel unlisted --artifacts-dir dist
 ```
 
 签名会把扩展源码上传到 AMO（`unlisted` 仅用于取回签名包，不公开列出）。不签名也能用，只是每次启动 Firefox 后要临时载入一次。
 
 不想配置 API keys 可以走网页：addons.mozilla.org → Developer Hub → Submit a New Add-on → 选「On your own」→ 上传 `dist/askai_-1.0.0.zip` → 签名完成后下载 XPI。之后在 `about:addons` 齿轮菜单 →「从文件安装附加组件」选择该 XPI。
+
+### 上架 AMO 获取一键安装
+
+GitHub Releases 的 XPI 只能下载后安装；要在 AMO 搜索页出现并支持一键安装，需要 **listed** 提交（与 unlisted 是两条独立提交，不能互转）：
+
+1. 登录 addons.mozilla.org → Developer Hub → Submit a New Add-on
+2. 分发方式选 **On this site**（listed），上传 `dist/askai_-1.0.0.zip`
+3. 隐私政策 URL 填本 README 的「Key 安全设计」锚点
+4. 审核通过后，AMO 列表页的「Add to Firefox」就是真正的一键安装链接
 
 ## 使用
 
