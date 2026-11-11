@@ -1,5 +1,12 @@
 选中网页文字 → **✦ AI** → 流式答案。API Key 只保存在本机代理，不进入浏览器。
 
+## 1.2.0
+
+- 界面支持 9 种语言（en、zh_CN、zh_TW、de、es、fr、ja、ko、ru），跟随 Firefox UI 语言。
+- 设置页、面板按钮/状态、错误提示全部走 `browser.i18n`；`manifest.json` 使用 `default_locale` 与 `__MSG_*__`。
+- 功能与 1.1.0 相同。
+- 新增 Chromium/Edge 构建：`./build-chromium.sh` → `dist/askai-1.2.0-chromium.zip`；共享 9 语言 UI 与本机代理。Chrome 157 实测划词流式、设置页、`Alt+Shift+A` 与 35 秒无 token 慢流均通过。
+
 ## 1.1.0
 
 - 更换 add-on ID 为 `askai-selection@serein-213`，用于全新提交并选择 listed 渠道。

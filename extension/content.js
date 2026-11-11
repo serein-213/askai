@@ -1,5 +1,7 @@
 "use strict";
 
+const browser = globalThis.browser ?? globalThis.chrome;
+
 (() => {
   if (window.top !== window || window.__askaiInjected) {
     return;
@@ -9,6 +11,14 @@
   const MAX_SELECTION = 8000;
   const HOST_ID = "__askai_host";
   const SVG_NS = "http://www.w3.org/2000/svg";
+
+  const t = (key, substitutions) => {
+    try {
+      return browser.i18n.getMessage(key, substitutions) || key;
+    } catch (_error) {
+      return key;
+    }
+  };
 
   let host = null;
   let shadow = null;
@@ -247,7 +257,7 @@
 
     pill = el("button", "pill");
     pill.type = "button";
-    pill.title = "询问 AI（Alt+Shift+A）";
+    pill.title = t("pillTitle");
     pill.append(el("span", "spark", "✦"), el("span", "label", "AI"));
     pill.addEventListener("click", (event) => {
       event.preventDefault();
@@ -260,7 +270,7 @@
 
     panel = el("div", "panel");
     panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-label", "AskAI");
+    panel.setAttribute("aria-label", t("panelLabel"));
 
     const head = el("div", "head");
     const brand = el("span", "brand", "✦");
@@ -271,8 +281,8 @@
 
     const settingsBtn = el("button", "icon");
     settingsBtn.type = "button";
-    settingsBtn.title = "设置";
-    settingsBtn.setAttribute("aria-label", "设置");
+    settingsBtn.title = t("settings");
+    settingsBtn.setAttribute("aria-label", t("settings"));
     settingsBtn.appendChild(icon(SLIDERS_ICON));
     settingsBtn.addEventListener("click", () => {
       try {
@@ -284,8 +294,8 @@
 
     stopBtn = el("button", "icon");
     stopBtn.type = "button";
-    stopBtn.title = "停止";
-    stopBtn.setAttribute("aria-label", "停止");
+    stopBtn.title = t("stop");
+    stopBtn.setAttribute("aria-label", t("stop"));
     stopBtn.appendChild(
       icon([{ d: "M6 4.75h4A1.25 1.25 0 0 1 11.25 6v4A1.25 1.25 0 0 1 10 11.25H6A1.25 1.25 0 0 1 4.75 10V6A1.25 1.25 0 0 1 6 4.75Z", fill: true }])
     );
@@ -293,8 +303,8 @@
 
     copyBtn = el("button", "icon");
     copyBtn.type = "button";
-    copyBtn.title = "复制";
-    copyBtn.setAttribute("aria-label", "复制");
+    copyBtn.title = t("copy");
+    copyBtn.setAttribute("aria-label", t("copy"));
     copyBtn.append(
       icon(COPY_ICON, "copyicon"),
       icon([{ d: "M3.5 8.5l3 3 6-6" }], "checkicon")
@@ -303,8 +313,8 @@
 
     const closeBtn = el("button", "icon");
     closeBtn.type = "button";
-    closeBtn.title = "关闭";
-    closeBtn.setAttribute("aria-label", "关闭");
+    closeBtn.title = t("close");
+    closeBtn.setAttribute("aria-label", t("close"));
     closeBtn.appendChild(icon([{ d: "M4.5 4.5l7 7M11.5 4.5l-7 7" }]));
     closeBtn.addEventListener("click", closePanel);
 
@@ -395,7 +405,7 @@
     stopBtn.style.display = "";
     copyBtn.style.display = "none";
     copyBtn.classList.remove("done");
-    setStatus("正在生成", false, true);
+    setStatus(t("generating"), false, true);
     openPanel(rect);
     connectAndAsk(selection);
   }
@@ -410,7 +420,7 @@
       }
       streaming = false;
       finishButtons();
-      setStatus("连接中断", true, false);
+      setStatus(t("disconnected"), true, false);
       caretEl.remove();
     });
     port.postMessage({ type: "ask", selection });
@@ -440,7 +450,7 @@
     } else if (event.type === "error") {
       streaming = false;
       finishButtons();
-      setStatus(String(event.message || "请求失败"), true, false);
+      setStatus(String(event.message || t("requestFailed")), true, false);
       caretEl.remove();
     } else if (event.type === "done") {
       if (!streaming) {
@@ -465,7 +475,7 @@
     streaming = false;
     disconnectPort();
     finishButtons();
-    setStatus("已停止", false, false);
+    setStatus(t("stopped"), false, false);
     caretEl.remove();
   }
 
@@ -701,7 +711,7 @@
       clearTimeout(copyTimer);
       copyTimer = setTimeout(() => copyBtn.classList.remove("done"), 1200);
     } else {
-      setStatus("复制失败", true, false);
+      setStatus(t("copyFailed"), true, false);
     }
   }
 

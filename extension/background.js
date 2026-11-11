@@ -1,6 +1,16 @@
 "use strict";
 
+const browser = globalThis.browser ?? globalThis.chrome;
+
 const PROXY = "http://127.0.0.1:8787";
+
+const t = (key, substitutions) => {
+  try {
+    return browser.i18n.getMessage(key, substitutions) || key;
+  } catch (_error) {
+    return key;
+  }
+};
 
 // One port per open panel. The page only ever talks to this background page,
 // which in turn only talks to 127.0.0.1:8787.
@@ -72,10 +82,10 @@ browser.runtime.onConnect.addListener((port) => {
         } catch (_error) {
           detail = "";
         }
-        throw new Error(detail || `本地代理返回 HTTP ${response.status}`);
+        throw new Error(detail || t("errHttp", [String(response.status)]));
       }
       if (!response.body) {
-        throw new Error("本地代理没有返回可流式读取的响应");
+        throw new Error(t("errNoStream"));
       }
 
       const reader = response.body.getReader();
@@ -111,7 +121,7 @@ browser.runtime.onConnect.addListener((port) => {
             } else if (event.type === "meta") {
               post({ type: "meta", model: String(event.model || "") });
             } else if (event.type === "error") {
-              post({ type: "error", message: String(event.message || "上游错误") });
+              post({ type: "error", message: String(event.message || t("errUpstream")) });
             } else if (event.type === "done") {
               post({ type: "done" });
             }
@@ -129,9 +139,9 @@ browser.runtime.onConnect.addListener((port) => {
 });
 
 function friendlyError(error) {
-  const message = error && error.message ? String(error.message) : "请求失败";
+  const message = error && error.message ? String(error.message) : t("requestFailed");
   if (/Failed to fetch|NetworkError|Load failed|Network request failed/i.test(message)) {
-    return "连不上本地代理 127.0.0.1:8787，请先启动 proxy/server.py";
+    return t("errProxyDown");
   }
   return message;
 }

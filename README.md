@@ -13,6 +13,24 @@ install.sh   生成配置（0600）与 systemd 用户单元
 set-key.sh   终端无回显录入 key，写入 0600 并启动服务
 ```
 
+## 多语言
+
+界面跟随 Firefox 的 UI 语言，内置 `en`、`zh_CN`、`zh_TW`、`de`、`es`、`fr`、`ja`、`ko`、`ru` 九种；设置页、面板按钮、状态与错误提示均已本地化。
+
+新增语言：复制 `extension/_locales/en/messages.json` 为 `extension/_locales/<locale>/messages.json`，翻译其中 33 个 key；`manifest.json` 已使用 `__MSG_*__` 占位，无需改代码。
+
+## Chromium / Edge
+
+同一份 `extension/` 可构建 Chromium 包：
+
+```bash
+./build-chromium.sh   # 生成 dist/askai-1.2.0-chromium.zip
+```
+
+- Chrome：`chrome://extensions` → 开发者模式 → 加载已解压的 `build/chromium`
+- Edge：`edge://extensions` → 开发人员模式 → 加载解压缩的扩展
+- 仍需本机代理；key 只在本机代理。界面语言同样跟随浏览器，`_locales` 与 Firefox 共用。
+
 ## 安装
 
 1. 部署代理（常驻）：

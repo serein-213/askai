@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 dist/
+build/
 *.xpi
 .amo-upload-uuid
 .DS_Store

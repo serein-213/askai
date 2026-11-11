@@ -1,8 +1,34 @@
 "use strict";
 
+const browser = globalThis.browser ?? globalThis.chrome;
+
 const PROXY = "http://127.0.0.1:8787";
 const $ = (id) => document.getElementById(id);
 const statusEl = $("status");
+
+const t = (key) => {
+  try {
+    return browser.i18n.getMessage(key) || key;
+  } catch (_error) {
+    return key;
+  }
+};
+
+function localize() {
+  document.title = t("optionsTitle");
+  for (const node of document.querySelectorAll("[data-i18n]")) {
+    const message = t(node.getAttribute("data-i18n"));
+    if (message) {
+      node.textContent = message;
+    }
+  }
+  for (const node of document.querySelectorAll("[data-i18n-placeholder]")) {
+    const message = t(node.getAttribute("data-i18n-placeholder"));
+    if (message) {
+      node.placeholder = message;
+    }
+  }
+}
 
 function setStatus(text, isError) {
   statusEl.textContent = text || "";
@@ -19,7 +45,7 @@ function fill(settings) {
 }
 
 async function load() {
-  setStatus("读取中…", false);
+  setStatus(t("statusReading"), false);
   try {
     const response = await fetch(`${PROXY}/v1/settings`, { cache: "no-store" });
     if (!response.ok) {
@@ -28,7 +54,7 @@ async function load() {
     fill(await response.json());
     setStatus("", false);
   } catch (_error) {
-    setStatus("连不上本地代理，请确认 askai.service 已启动", true);
+    setStatus(t("statusProxyDown"), true);
   }
 }
 
@@ -38,7 +64,7 @@ async function save(event) {
   try {
     requestOptions = JSON.parse($("request_options").value || "{}");
   } catch (_error) {
-    setStatus("request_options 不是合法 JSON", true);
+    setStatus(t("statusInvalidJson"), true);
     return;
   }
 
@@ -53,7 +79,7 @@ async function save(event) {
 
   const button = $("save");
   button.disabled = true;
-  setStatus("保存中…", false);
+  setStatus(t("statusSaving"), false);
   try {
     const response = await fetch(`${PROXY}/v1/settings`, {
       method: "PUT",
@@ -65,7 +91,7 @@ async function save(event) {
       throw new Error(data.error || `HTTP ${response.status}`);
     }
     fill(data);
-    setStatus("已保存，立即生效", false);
+    setStatus(t("statusSaved"), false);
   } catch (error) {
     setStatus(String((error && error.message) || error), true);
   } finally {
@@ -73,5 +99,6 @@ async function save(event) {
   }
 }
 
+localize();
 $("form").addEventListener("submit", save);
 load();
