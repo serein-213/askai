@@ -52,6 +52,8 @@ npx web-ext sign --channel unlisted --artifacts-dir dist
 
 签名会把扩展源码上传到 AMO（`unlisted` 仅用于取回签名包，不公开列出）。不签名也能用，只是每次启动 Firefox 后要临时载入一次。
 
+不想配置 API keys 可以走网页：addons.mozilla.org → Developer Hub → Submit a New Add-on → 选「On your own」→ 上传 `dist/askai_-1.0.0.zip` → 签名完成后下载 XPI。之后在 `about:addons` 齿轮菜单 →「从文件安装附加组件」选择该 XPI。
+
 ## 使用
 
 - 选中文字 → 点选区旁的 **✦ AI**，或按 `Alt+Shift+A`。
