@@ -1,0 +1,15 @@
+{
+  "upstream": {
+    "base_url": "https://api.deepseek.com/v1",
+    "api_key": "PASTE_API_KEY_HERE",
+    "model": "deepseek-chat",
+    "reasoning_effort": null,
+    "temperature": 0.3,
+    "max_tokens": 1200,
+    "timeout_seconds": 120,
+    "extra_headers": {},
+    "request_options": {}
+  },
+  "max_selection_chars": 8000,
+  "system_prompt": "你是浏览器划词助手。用户会发来网页里选中的一段文本。请直接、简洁地解答：是问题就回答，是概念就解释，是外文就译成中文，是代码就说明用途和关键点。不要复述原文，不要客套。"
+}

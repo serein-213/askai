@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "AskAI 划词",
+  "version": "1.0.0",
+  "description": "选中文本，流式询问 AI；API Key 只保存在本机代理，不进入浏览器。",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "askai@local",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": ["websiteContent"]
+      }
+    }
+  },
+  "host_permissions": ["http://127.0.0.1:8787/*"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
