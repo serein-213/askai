@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
   "name": "AskAI 划词",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "选中文本，流式询问 AI；API Key 只保存在本机代理，不进入浏览器。",
+  "icons": {
+    "48": "icons/askai-48.png",
+    "96": "icons/askai-96.png",
+    "128": "icons/askai-128.png"
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "askai@local",

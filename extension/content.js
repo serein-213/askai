@@ -58,7 +58,7 @@
   }
 }
 .pill {
-  position: fixed; display: none; align-items: center; gap: 5px;
+  position: fixed; display: none; align-items: center; gap: 5px; pointer-events: auto;
   height: 28px; padding: 0 10px; border-radius: 999px;
   border: 1px solid var(--border); background: var(--bg); color: var(--fg);
   font: 600 12px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", "PingFang SC", sans-serif;
@@ -72,7 +72,7 @@
 .pill .spark { color: var(--accent); font-size: 13px; line-height: 1; }
 .pill:focus-visible, .icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .panel {
-  position: fixed; display: none; flex-direction: column; overflow: hidden;
+  position: fixed; display: none; flex-direction: column; overflow: hidden; pointer-events: auto;
   background: var(--bg); color: var(--fg);
   border: 1px solid var(--border); border-radius: 14px;
   box-shadow: var(--shadow);
