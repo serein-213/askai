@@ -50,16 +50,18 @@ npx web-ext sign --source-dir extension --channel unlisted --artifacts-dir dist
 
 签名会把扩展源码上传到 AMO（`unlisted` 仅用于取回签名包，不公开列出）。不签名也能用，只是每次启动 Firefox 后要临时载入一次。
 
-不想配置 API keys 可以走网页：addons.mozilla.org → Developer Hub → Submit a New Add-on → 选「On your own」→ 上传 `dist/askai_-1.0.0.zip` → 签名完成后下载 XPI。之后在 `about:addons` 齿轮菜单 →「从文件安装附加组件」选择该 XPI。
+同一 add-on 已存在后，网页端只能用该 add-on 的「Upload New Version」；「Submit a New Add-on」会报重复 add-on ID。
 
 ### 上架 AMO 获取一键安装
 
-GitHub Releases 的 XPI 只能下载后安装；要在 AMO 搜索页出现并支持一键安装，需要 **listed** 提交（与 unlisted 是两条独立提交，不能互转）：
+AMO 允许同一个 add-on 混合 listed / unlisted 版本，版本号跨渠道唯一。不要删条目、不要换 ID：
 
-1. 登录 addons.mozilla.org → Developer Hub → Submit a New Add-on
-2. 分发方式选 **On this site**（listed），上传 `dist/askai_-1.0.0.zip`
-3. 隐私政策 URL 填本 README 的「Key 安全设计」锚点
-4. 审核通过后，AMO 列表页的「Add to Firefox」就是真正的一键安装链接
+1. 打开 <https://addons.mozilla.org/en-US/developers/addon/bae6813623aa40829c79/versions>
+2. **Upload New Version**，上传 `dist/askai_-1.0.1.zip`，渠道选 **Listed / On this site**
+3. 首次 listed 需补 listing 信息（summary、description、分类）与隐私政策：<https://github.com/serein-213/askai/blob/main/PRIVACY.md>
+4. 审核通过后，AMO 列表页的「Add to Firefox」就是一键安装链接
+
+1.0.0 已被 unlisted 占用，所以 listed 版是 1.0.1。
 
 ## 使用
 

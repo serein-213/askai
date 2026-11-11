@@ -1,0 +1,14 @@
+选中网页文字 → **✦ AI** → 流式答案。API Key 只保存在本机代理，不进入浏览器。
+
+## 安装
+
+1. 下载本页的 `askai-1.0.0.xpi`（已由 addons.mozilla.org 签名）。
+2. Firefox 打开 `about:addons` → 齿轮 →「从文件安装附加组件」→ 选择该 XPI。
+3. 启动本机代理并写入 key：见 <https://github.com/serein-213/askai#安装>
+
+扩展只访问 `127.0.0.1:8787`；没有代理时会提示连不上。
+
+## 说明
+
+- 这是 unlisted 自发布签名包：可自由分发，但不会出现在 AMO 搜索页。
+- 需要 AMO 一键安装：见 README「上架 AMO 获取一键安装」。
