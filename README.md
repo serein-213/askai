@@ -107,6 +107,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
+ReadWritePaths=%h/.config/askai
 
 [Install]
 WantedBy=default.target

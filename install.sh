@@ -41,6 +41,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
+ReadWritePaths=$config_dir
 
 [Install]
 WantedBy=default.target

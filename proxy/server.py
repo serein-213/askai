@@ -246,6 +246,9 @@ class Handler(BaseHTTPRequestHandler):
             except SystemExit:
                 self._json(500, {"error": "配置校验失败，未生效"})
                 return
+            except OSError as exc:
+                self._json(500, {"error": f"写入配置失败：{exc}"})
+                return
             type(self).cfg = new_cfg
         self._json(200, self._settings())
 
