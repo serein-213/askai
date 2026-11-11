@@ -8,6 +8,7 @@
 
   const MAX_SELECTION = 8000;
   const HOST_ID = "__askai_host";
+  const SVG_NS = "http://www.w3.org/2000/svg";
 
   let host = null;
   let shadow = null;
@@ -15,9 +16,11 @@
   let panel = null;
   let bodyEl = null;
   let statusEl = null;
+  let statusText = null;
   let modelEl = null;
   let stopBtn = null;
   let copyBtn = null;
+  let caretEl = null;
 
   let port = null;
   let streaming = false;
@@ -25,72 +28,132 @@
   let lastSelection = null;
   let mouseDown = false;
   let selectionTimer = 0;
-  let statusTimer = 0;
+  let copyTimer = 0;
   let renderQueued = false;
 
   const CSS = `
-:host { all: initial; }
-.pill {
-  position: fixed; display: none; align-items: center; pointer-events: auto;
-  height: 26px; padding: 0 9px; border-radius: 13px;
-  border: 1px solid #cfcfcf; background: #fff; color: #1b1b1b;
-  font: 600 12px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
-  box-shadow: 0 2px 10px rgba(0,0,0,.18); cursor: pointer; user-select: none;
-  letter-spacing: .02em; white-space: nowrap;
+:host {
+  all: initial;
+  --bg: #ffffff;
+  --fg: #17181c;
+  --muted: #6f7480;
+  --border: #e4e6eb;
+  --surface: #f5f6f8;
+  --code-bg: #f4f5f8;
+  --accent: #5457d6;
+  --accent-soft: #eef0ff;
+  --shadow: 0 16px 44px rgba(17, 24, 39, .18), 0 2px 8px rgba(17, 24, 39, .06);
 }
-.pill:hover { background: #f4f4f4; }
+@media (prefers-color-scheme: dark) {
+  :host {
+    --bg: #1c1e24;
+    --fg: #e7e9ee;
+    --muted: #98a0ad;
+    --border: #2f333c;
+    --surface: #252830;
+    --code-bg: #15171c;
+    --accent: #8b8cf8;
+    --accent-soft: #272a3c;
+    --shadow: 0 18px 48px rgba(0, 0, 0, .55), 0 2px 8px rgba(0, 0, 0, .4);
+  }
+}
+.pill {
+  position: fixed; display: none; align-items: center; gap: 5px;
+  height: 28px; padding: 0 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+  font: 600 12px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", "PingFang SC", sans-serif;
+  letter-spacing: .02em; white-space: nowrap; cursor: pointer; user-select: none;
+  box-shadow: 0 3px 14px rgba(17, 24, 39, .16);
+  animation: pillIn .14s ease both;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.pill:hover { background: var(--surface); transform: translateY(-1px); box-shadow: 0 7px 20px rgba(17, 24, 39, .2); }
+.pill:active { transform: translateY(0); }
+.pill .spark { color: var(--accent); font-size: 13px; line-height: 1; }
+.pill:focus-visible, .icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .panel {
-  position: fixed; display: none; flex-direction: column; pointer-events: auto;
-  background: #fff; color: #111; border: 1px solid #d7d7d7; border-radius: 12px;
-  box-shadow: 0 10px 36px rgba(0,0,0,.22); overflow: hidden;
-  font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
+  position: fixed; display: none; flex-direction: column; overflow: hidden;
+  background: var(--bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: var(--shadow);
+  font: 13.5px/1.7 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", "PingFang SC", sans-serif;
+  animation: panelIn .16s cubic-bezier(.2, .8, .2, 1) both;
 }
 .head {
-  display: flex; align-items: center; gap: 6px; flex: 0 0 auto;
-  padding: 7px 8px 7px 12px; border-bottom: 1px solid #ececec;
+  display: flex; align-items: center; gap: 7px; flex: 0 0 auto;
+  padding: 9px 9px 9px 11px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(127, 127, 127, .035), transparent);
 }
-.title { font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+.brand {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; flex: 0 0 auto; border-radius: 6px;
+  background: var(--accent-soft); color: var(--accent); font-size: 12px; line-height: 1;
+}
+.title { font-size: 12px; font-weight: 650; letter-spacing: .02em; }
 .model {
-  max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-size: 11px; color: #8a8a8a;
+  max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 1px 7px; border: 1px solid var(--border); border-radius: 999px;
+  background: var(--surface); color: var(--muted); font-size: 10.5px; line-height: 1.6;
 }
+.model:empty { display: none; }
 .spacer { flex: 1 1 auto; }
+.icons { display: flex; gap: 2px; flex: 0 0 auto; }
 .icon {
-  width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px;
-  background: transparent; color: #777; cursor: pointer;
-  font: 13px/1 ui-sans-serif, system-ui, sans-serif;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; padding: 0; border: 0; border-radius: 7px;
+  background: transparent; color: var(--muted); cursor: pointer;
+  transition: background .12s ease, color .12s ease, transform .1s ease;
 }
-.icon:hover { background: #f0f0f0; color: #222; }
+.icon:hover { background: var(--surface); color: var(--fg); }
+.icon:active { transform: scale(.94); }
+.icon svg { display: block; width: 14px; height: 14px; }
+.icon .checkicon { display: none; }
+.icon.done { color: var(--accent); }
+.icon.done .checkicon { display: block; }
+.icon.done .copyicon { display: none; }
 .body {
-  flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 10px 13px;
-  white-space: pre-wrap; overflow-wrap: anywhere;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 12px 14px 13px; white-space: pre-wrap; overflow-wrap: anywhere;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
 }
+.body::-webkit-scrollbar { width: 8px; }
+.body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 .body pre {
-  margin: 8px 0; padding: 9px 10px; border: 1px solid #e6e6e6; border-radius: 8px;
-  background: #f6f6f6; overflow-x: auto; white-space: pre;
+  margin: 10px 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--code-bg); overflow-x: auto; white-space: pre;
+  font: 12.5px/1.6 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  tab-size: 2;
 }
 .body code {
-  padding: 1px 4px; border-radius: 4px; background: #f2f2f2;
-  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  padding: 1.5px 5px; border-radius: 5px; background: var(--code-bg);
+  font: 12.5px/1.5 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
-.body pre code { padding: 0; background: none; }
+.body pre code { padding: 0; background: none; border-radius: 0; }
+.caret {
+  display: inline-block; width: 5px; height: 13px; margin-left: 2px;
+  border-radius: 2px; background: var(--accent); vertical-align: -2px;
+  animation: blink 1s steps(2, start) infinite;
+}
 .status {
-  display: none; flex: 0 0 auto; padding: 0 13px 8px; color: #8a8a8a;
-  font: 11px/1.5 ui-sans-serif, system-ui, sans-serif;
+  display: none; align-items: center; gap: 6px; flex: 0 0 auto;
+  padding: 0 14px 10px; color: var(--muted);
+  font: 11px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
 }
-.status.err { color: #c0392b; }
-@media (prefers-color-scheme: dark) {
-  .pill { border-color: #3a3a3a; background: #2b2b2b; color: #f0f0f0; }
-  .pill:hover { background: #383838; }
-  .panel { border-color: #3a3a3a; background: #1f1f1f; color: #ececec; }
-  .head { border-bottom-color: #333; }
-  .model { color: #9b9b9b; }
-  .icon { color: #9b9b9b; }
-  .icon:hover { background: #333; color: #fff; }
-  .body pre { border-color: #333; background: #171717; }
-  .body code { background: #2c2c2c; }
-  .status { color: #9b9b9b; }
-  .status.err { color: #ff7b6b; }
+.status.err { color: #d23b3b; }
+.spinner {
+  display: none; width: 10px; height: 10px; flex: 0 0 auto;
+  border: 1.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.status.busy .spinner { display: inline-block; }
+@keyframes pillIn { from { opacity: 0; transform: translateY(3px) scale(.96); } }
+@keyframes panelIn { from { opacity: 0; transform: translateY(6px) scale(.985); } }
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .pill, .panel { animation: none; }
+  .caret, .spinner { animation: none; }
+  .pill, .icon { transition: none; }
 }`;
 
   function el(tag, className, text) {
@@ -103,6 +166,35 @@
     }
     return node;
   }
+
+  function icon(paths, className) {
+    const node = document.createElementNS(SVG_NS, "svg");
+    node.setAttribute("viewBox", "0 0 16 16");
+    node.setAttribute("aria-hidden", "true");
+    if (className) {
+      node.setAttribute("class", className);
+    }
+    for (const spec of paths) {
+      const shape = document.createElementNS(SVG_NS, "path");
+      shape.setAttribute("d", spec.d);
+      if (spec.fill) {
+        shape.setAttribute("fill", "currentColor");
+      } else {
+        shape.setAttribute("fill", "none");
+        shape.setAttribute("stroke", "currentColor");
+        shape.setAttribute("stroke-width", "1.6");
+        shape.setAttribute("stroke-linecap", "round");
+        shape.setAttribute("stroke-linejoin", "round");
+      }
+      node.appendChild(shape);
+    }
+    return node;
+  }
+
+  const COPY_ICON = [
+    { d: "M5.5 5.5V3.9c0-.8.6-1.4 1.4-1.4h5.2c.8 0 1.4.6 1.4 1.4v5.2c0 .8-.6 1.4-1.4 1.4H10.5" },
+    { d: "M3.9 5.5h5.2c.8 0 1.4.6 1.4 1.4v5.2c0 .8-.6 1.4-1.4 1.4H3.9c-.8 0-1.4-.6-1.4-1.4V6.9c0-.8.6-1.4 1.4-1.4Z" },
+  ];
 
   function build() {
     if (document.getElementById(HOST_ID)) {
@@ -124,9 +216,10 @@
       shadow.appendChild(style);
     }
 
-    pill = el("button", "pill", "✦ AI");
+    pill = el("button", "pill");
     pill.type = "button";
     pill.title = "询问 AI（Alt+Shift+A）";
+    pill.append(el("span", "spark", "✦"), el("span", "label", "AI"));
     pill.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -141,28 +234,50 @@
     panel.setAttribute("aria-label", "AskAI");
 
     const head = el("div", "head");
-    const title = el("span", "title", "AI");
-    modelEl = el("span", "model", "");
+    const brand = el("span", "brand", "✦");
+    const title = el("span", "title", "AskAI");
+    modelEl = el("span", "model");
     const spacer = el("span", "spacer");
-    stopBtn = el("button", "icon", "■");
+    const icons = el("span", "icons");
+
+    stopBtn = el("button", "icon");
     stopBtn.type = "button";
     stopBtn.title = "停止";
     stopBtn.setAttribute("aria-label", "停止");
+    stopBtn.appendChild(
+      icon([{ d: "M6 4.75h4A1.25 1.25 0 0 1 11.25 6v4A1.25 1.25 0 0 1 10 11.25H6A1.25 1.25 0 0 1 4.75 10V6A1.25 1.25 0 0 1 6 4.75Z", fill: true }])
+    );
     stopBtn.addEventListener("click", stop);
-    copyBtn = el("button", "icon", "⧉");
+
+    copyBtn = el("button", "icon");
     copyBtn.type = "button";
     copyBtn.title = "复制";
     copyBtn.setAttribute("aria-label", "复制");
+    copyBtn.append(
+      icon(COPY_ICON, "copyicon"),
+      icon([{ d: "M3.5 8.5l3 3 6-6" }], "checkicon")
+    );
     copyBtn.addEventListener("click", copyAnswer);
-    const closeBtn = el("button", "icon", "✕");
+
+    const closeBtn = el("button", "icon");
     closeBtn.type = "button";
     closeBtn.title = "关闭";
     closeBtn.setAttribute("aria-label", "关闭");
+    closeBtn.appendChild(icon([{ d: "M4.5 4.5l7 7M11.5 4.5l-7 7" }]));
     closeBtn.addEventListener("click", closePanel);
-    head.append(title, modelEl, spacer, stopBtn, copyBtn, closeBtn);
+
+    icons.append(stopBtn, copyBtn, closeBtn);
+    head.append(brand, title, modelEl, spacer, icons);
 
     bodyEl = el("div", "body");
+    caretEl = el("span", "caret");
+    caretEl.setAttribute("aria-hidden", "true");
+
     statusEl = el("div", "status");
+    statusEl.setAttribute("role", "status");
+    statusText = el("span", "status-text");
+    statusEl.append(el("span", "spinner"), statusText);
+
     panel.append(head, bodyEl, statusEl);
     shadow.appendChild(panel);
 
@@ -171,10 +286,10 @@
   }
 
   // ------------------------------------------------------------------ panel
-  function setStatus(text, isError) {
-    statusEl.textContent = text || "";
-    statusEl.className = isError ? "status err" : "status";
-    statusEl.style.display = text ? "block" : "none";
+  function setStatus(text, isError, busy) {
+    statusText.textContent = text || "";
+    statusEl.className = "status" + (isError ? " err" : "") + (busy ? " busy" : "");
+    statusEl.style.display = text ? "flex" : "none";
   }
 
   function positionPanel(rect) {
@@ -212,6 +327,7 @@
     bodyEl.textContent = "";
     statusEl.style.display = "none";
     copyBtn.style.display = "none";
+    copyBtn.classList.remove("done");
     stopBtn.style.display = "";
     answer = "";
   }
@@ -231,11 +347,13 @@
     hidePill();
     answer = "";
     bodyEl.textContent = "";
+    bodyEl.scrollTop = 0;
     modelEl.textContent = "";
     streaming = true;
     stopBtn.style.display = "";
     copyBtn.style.display = "none";
-    setStatus("生成中…", false);
+    copyBtn.classList.remove("done");
+    setStatus("正在生成", false, true);
     openPanel(rect);
     connectAndAsk(selection);
   }
@@ -250,7 +368,8 @@
       }
       streaming = false;
       finishButtons();
-      setStatus("连接中断", true);
+      setStatus("连接中断", true, false);
+      caretEl.remove();
     });
     port.postMessage({ type: "ask", selection });
   }
@@ -279,14 +398,16 @@
     } else if (event.type === "error") {
       streaming = false;
       finishButtons();
-      setStatus(String(event.message || "请求失败"), true);
+      setStatus(String(event.message || "请求失败"), true, false);
+      caretEl.remove();
     } else if (event.type === "done") {
       if (!streaming) {
         return;
       }
       streaming = false;
       finishButtons();
-      setStatus("", false);
+      setStatus("", false, false);
+      caretEl.remove();
     }
   }
 
@@ -302,7 +423,8 @@
     streaming = false;
     disconnectPort();
     finishButtons();
-    setStatus("已停止", false);
+    setStatus("已停止", false, false);
+    caretEl.remove();
   }
 
   // ---------------------------------------------------------------- render
@@ -318,6 +440,8 @@
   }
 
   function render(text) {
+    const stickToBottom =
+      bodyEl.scrollHeight - bodyEl.scrollTop - bodyEl.clientHeight < 32;
     bodyEl.textContent = "";
     const fence = /```[^\n]*\n([\s\S]*?)(?:```|$)/g;
     let last = 0;
@@ -332,6 +456,12 @@
       last = fence.lastIndex;
     }
     appendText(text.slice(last));
+    if (streaming) {
+      bodyEl.appendChild(caretEl);
+    }
+    if (stickToBottom) {
+      bodyEl.scrollTop = bodyEl.scrollHeight;
+    }
   }
 
   function appendText(chunk) {
@@ -381,14 +511,12 @@
       }
       area.remove();
     }
-    clearTimeout(statusTimer);
-    setStatus(copied ? "已复制" : "复制失败", !copied);
     if (copied) {
-      statusTimer = setTimeout(() => {
-        if (!streaming) {
-          setStatus("", false);
-        }
-      }, 1200);
+      copyBtn.classList.add("done");
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => copyBtn.classList.remove("done"), 1200);
+    } else {
+      setStatus("复制失败", true, false);
     }
   }
 
@@ -432,8 +560,9 @@
 
   function showPill(rect) {
     const margin = 6;
-    const width = 52;
-    const height = 26;
+    pill.style.display = "inline-flex";
+    const width = pill.offsetWidth || 58;
+    const height = pill.offsetHeight || 28;
     let left = rect.right - 8;
     if (left + width > window.innerWidth - margin) {
       left = window.innerWidth - width - margin;
@@ -445,7 +574,6 @@
     }
     pill.style.left = `${left}px`;
     pill.style.top = `${top}px`;
-    pill.style.display = "inline-flex";
   }
 
   function maybeShowPill() {
