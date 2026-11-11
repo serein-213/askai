@@ -1,35 +1,148 @@
 {
-  "extensionName": { "message": "AskAI Sélection" },
-  "extensionDescription": { "message": "Sélectionnez du texte et interrogez votre propre IA. Réponses en streaming ; la clé API reste dans un proxy local et n'entre jamais dans le navigateur." },
-  "pillTitle": { "message": "Interroger l'IA (Alt+Maj+A)" },
-  "panelLabel": { "message": "AskAI" },
-  "settings": { "message": "Paramètres" },
-  "stop": { "message": "Arrêter" },
-  "copy": { "message": "Copier" },
-  "close": { "message": "Fermer" },
-  "generating": { "message": "Génération…" },
-  "disconnected": { "message": "Connexion perdue" },
-  "requestFailed": { "message": "Échec de la requête" },
-  "stopped": { "message": "Arrêté" },
-  "copyFailed": { "message": "Échec de la copie" },
-  "optionsTitle": { "message": "Paramètres AskAI" },
-  "optionsHint": { "message": "Les modifications s'appliquent immédiatement. La clé API et l'endpoint ne se configurent pas ici." },
-  "labelModel": { "message": "Modèle" },
-  "labelEffort": { "message": "Profondeur de raisonnement" },
-  "effortPlaceholder": { "message": "low / high / max ; vide = valeur du modèle" },
-  "labelTemperature": { "message": "Température" },
-  "labelMaxTokens": { "message": "max_tokens" },
-  "labelSystemPrompt": { "message": "Prompt système" },
-  "labelRequestOptions": { "message": "request_options (avancé, JSON)" },
-  "save": { "message": "Enregistrer" },
-  "statusReading": { "message": "Chargement…" },
-  "statusProxyDown": { "message": "Proxy local injoignable. askai.service est-il lancé ?" },
-  "statusSaving": { "message": "Enregistrement…" },
-  "statusSaved": { "message": "Enregistré. Appliqué immédiatement." },
-  "statusInvalidJson": { "message": "request_options n'est pas un JSON valide" },
-  "optionsFoot": { "message": "Key / base_url / extra_headers restent gérés dans ~/.config/askai/config.json" },
-  "errProxyDown": { "message": "Proxy local 127.0.0.1:8787 injoignable. Lancez proxy/server.py." },
-  "errHttp": { "message": "Le proxy local a renvoyé HTTP $STATUS$", "placeholders": { "status": { "content": "$1" } } },
-  "errNoStream": { "message": "Le proxy local n'a pas renvoyé de réponse en streaming" },
-  "errUpstream": { "message": "Erreur du service amont" }
+  "extensionName": {
+    "message": "AskAI Sélection"
+  },
+  "extensionDescription": {
+    "message": "Sélectionnez du texte et interrogez votre propre IA. Réponses en streaming ; la clé API reste dans un proxy local et n'entre jamais dans le navigateur."
+  },
+  "pillTitle": {
+    "message": "Interroger l'IA (Alt+Maj+A)"
+  },
+  "panelLabel": {
+    "message": "AskAI"
+  },
+  "settings": {
+    "message": "Paramètres"
+  },
+  "stop": {
+    "message": "Arrêter"
+  },
+  "copy": {
+    "message": "Copier"
+  },
+  "close": {
+    "message": "Fermer"
+  },
+  "generating": {
+    "message": "Génération…"
+  },
+  "disconnected": {
+    "message": "Connexion perdue"
+  },
+  "requestFailed": {
+    "message": "Échec de la requête"
+  },
+  "stopped": {
+    "message": "Arrêté"
+  },
+  "copyFailed": {
+    "message": "Échec de la copie"
+  },
+  "optionsTitle": {
+    "message": "Paramètres AskAI"
+  },
+  "optionsHint": {
+    "message": "Les modifications s'appliquent immédiatement. La clé API et l'endpoint ne se configurent pas ici."
+  },
+  "labelModel": {
+    "message": "Modèle"
+  },
+  "labelEffort": {
+    "message": "Profondeur de raisonnement"
+  },
+  "effortPlaceholder": {
+    "message": "low / high / max ; vide = valeur du modèle"
+  },
+  "labelTemperature": {
+    "message": "Température"
+  },
+  "labelMaxTokens": {
+    "message": "max_tokens"
+  },
+  "labelSystemPrompt": {
+    "message": "Prompt système"
+  },
+  "labelRequestOptions": {
+    "message": "request_options (avancé, JSON)"
+  },
+  "save": {
+    "message": "Enregistrer"
+  },
+  "statusReading": {
+    "message": "Chargement…"
+  },
+  "statusProxyDown": {
+    "message": "Proxy local injoignable. askai.service est-il lancé ?"
+  },
+  "statusSaving": {
+    "message": "Enregistrement…"
+  },
+  "statusSaved": {
+    "message": "Enregistré. Appliqué immédiatement."
+  },
+  "statusInvalidJson": {
+    "message": "request_options n'est pas un JSON valide"
+  },
+  "optionsFoot": {
+    "message": "Key / base_url / extra_headers restent gérés dans ~/.config/askai/config.json"
+  },
+  "errProxyDown": {
+    "message": "Proxy local 127.0.0.1:8787 injoignable. Lancez proxy/server.py."
+  },
+  "errHttp": {
+    "message": "Échec de la requête : HTTP $STATUS$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "errNoStream": {
+    "message": "Aucune réponse en streaming"
+  },
+  "errUpstream": {
+    "message": "Erreur du service amont"
+  },
+  "settingsMode": {
+    "message": "Connexion"
+  },
+  "modeProxy": {
+    "message": "Proxy local (recommandé)"
+  },
+  "modeDirect": {
+    "message": "Direct depuis le navigateur (clé dans le navigateur)"
+  },
+  "directWarning": {
+    "message": "Le mode direct stocke la clé API sans chiffrement dans le stockage de l’extension. Utilisez une clé distincte à faible quota ; le proxy local reste l’option la plus sûre. Pour Ollama local, utilisez le mode proxy."
+  },
+  "labelProvider": {
+    "message": "Fournisseur"
+  },
+  "labelApiKey": {
+    "message": "Clé API"
+  },
+  "apiKeyPlaceholder": {
+    "message": "sk-..."
+  },
+  "directFoot": {
+    "message": "Le mode direct utilise le point de terminaison fixe du fournisseur ; la clé n’est stockée que dans le stockage de l’extension de ce navigateur."
+  },
+  "statusDirectSaved": {
+    "message": "Enregistré dans le navigateur. Appliqué immédiatement."
+  },
+  "statusNeedKey": {
+    "message": "Le mode direct nécessite une clé API"
+  },
+  "statusNeedModel": {
+    "message": "Le modèle ne peut pas être vide"
+  },
+  "errDirectConfig": {
+    "message": "Configuration du mode direct invalide. Choisissez un fournisseur dans les réglages."
+  },
+  "errProviderDown": {
+    "message": "Impossible de joindre le fournisseur. Vérifiez le réseau, l’URL de base ou la clé."
+  },
+  "errEmptySelection": {
+    "message": "Aucun texte sélectionné"
+  }
 }

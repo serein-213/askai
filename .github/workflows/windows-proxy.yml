@@ -1,0 +1,63 @@
+name: windows-proxy
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "proxy/server.py"
+      - ".github/workflows/windows-proxy.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip pyinstaller
+      - name: Build askai-proxy.exe
+        run: pyinstaller --onefile --name askai-proxy proxy/server.py
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $cfg = Join-Path $env:TEMP "askai-ci-config.json"
+          $json = @{
+            upstream = @{
+              base_url = "http://127.0.0.1:9/v1"
+              api_key = "test-key"
+              model = "test-model"
+            }
+          } | ConvertTo-Json -Depth 5
+          Set-Content -Path $cfg -Value $json -Encoding utf8
+
+          $exe = Join-Path $PWD "dist\askai-proxy.exe"
+          $out = Join-Path $env:TEMP "askai-proxy-out.log"
+          $err = Join-Path $env:TEMP "askai-proxy-err.log"
+          $argList = @("--config", "`"$cfg`"")
+          $proc = Start-Process -FilePath $exe -ArgumentList $argList -PassThru `
+            -RedirectStandardOutput $out -RedirectStandardError $err
+
+          $ok = $false
+          for ($i = 0; $i -lt 60; $i++) {
+            Start-Sleep -Milliseconds 500
+            try {
+              $health = Invoke-RestMethod -Uri "http://127.0.0.1:8787/health" -TimeoutSec 2
+              if ($health.ok) { $ok = $true; break }
+            } catch {}
+          }
+
+          if (-not $ok) {
+            Get-Content $out -ErrorAction SilentlyContinue
+            Get-Content $err -ErrorAction SilentlyContinue
+            Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            throw "health check failed"
+          }
+          Write-Host "health ok"
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+      - uses: actions/upload-artifact@v4
+        with:
+          name: askai-proxy-windows
+          path: dist/askai-proxy.exe
+          if-no-files-found: error

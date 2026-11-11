@@ -8,6 +8,7 @@ Firefox 扩展 + 本机代理：选中网页文字 → 点 **✦ AI**（或 `Alt
 
 ```
 extension/   Firefox 扩展：manifest.json + background.js + content.js
+build-chromium.sh  Chromium/Edge 构建脚本
 proxy/       server.py（仅 Python 标准库）+ config.example.json
 install.sh   生成配置（0600）与 systemd 用户单元
 set-key.sh   终端无回显录入 key，写入 0600 并启动服务
@@ -24,7 +25,7 @@ set-key.sh   终端无回显录入 key，写入 0600 并启动服务
 同一份 `extension/` 可构建 Chromium 包：
 
 ```bash
-./build-chromium.sh   # 生成 dist/askai-1.2.0-chromium.zip
+./build-chromium.sh   # 生成 dist/askai-<version>-chromium.zip
 ```
 
 - Chrome：`chrome://extensions` → 开发者模式 → 加载已解压的 `build/chromium`
@@ -55,6 +56,18 @@ systemctl --user status askai
 
 不想把 key 写进文件：`export ASKAI_API_KEY=sk-...`；也支持 `ASKAI_BASE_URL`、`ASKAI_MODEL` 覆盖。
 
+### Windows（默认：本机代理）
+
+1. 下载 `askai-proxy.exe`（GitHub Actions 的 `windows-proxy` 产物；或本地 `pyinstaller --onefile --name askai-proxy proxy/server.py`）。
+2. 在终端运行：
+   ```bat
+   askai-proxy.exe --set-key
+   ```
+   输入 key（不回显）。配置写入 `%APPDATA%\askai\config.json`。
+3. 双击 `askai-proxy.exe` 启动；把快捷方式放进 `shell:startup` 可开机启动。
+4. 默认连 DeepSeek；编辑 `%APPDATA%\askai\config.json` 的 `upstream.base_url` / `model` 可换 OpenAI、OpenRouter 等。
+5. 代理只监听 `127.0.0.1:8787`。exe 未签名时 SmartScreen 可能提示。
+
 2. 装扩展：
 
 - 临时载入：Firefox 打开 `about:debugging#/runtime/this-firefox` → 「临时载入附加组件」→ 选 `~/askai/extension/manifest.json`（重启 Firefox 后需重做）。
@@ -66,6 +79,15 @@ systemctl --user status askai
 - `Esc` 关闭，`■` 停止，`⧉` 复制答案。
 - 输入框/文本域里选中的文字同样可用。
 - 答案按常见 Markdown 渲染（标题、列表、引用、加粗/斜体/删除线、代码、链接）；链接由扩展在后台打开，模型输出不会注入 HTML。
+
+## 直连模式（可选）
+
+设置页 →「连接方式」→「浏览器直连」，支持 DeepSeek / OpenAI / OpenRouter。
+
+- key 存在浏览器扩展的 `storage.local`（**未加密**），只有 background 使用，不进入页面或内容脚本。
+- 仅建议使用单独的低额度 key；本机代理仍是推荐模式。
+- 本地 Ollama 请用代理模式：Ollama 默认拒绝 `chrome-extension://` / `moz-extension://` 的 Origin。
+- 直连会申请三家 API 的 host 权限；代理模式只使用 `127.0.0.1:8787`。
 
 ## 思考深度
 

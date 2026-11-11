@@ -1,35 +1,148 @@
 {
-  "extensionName": { "message": "AskAI Selección" },
-  "extensionDescription": { "message": "Selecciona texto y pregunta a tu propia IA. Respuestas en streaming; la clave API permanece en un proxy local y nunca entra en el navegador." },
-  "pillTitle": { "message": "Preguntar a la IA (Alt+Mayús+A)" },
-  "panelLabel": { "message": "AskAI" },
-  "settings": { "message": "Ajustes" },
-  "stop": { "message": "Detener" },
-  "copy": { "message": "Copiar" },
-  "close": { "message": "Cerrar" },
-  "generating": { "message": "Generando…" },
-  "disconnected": { "message": "Conexión perdida" },
-  "requestFailed": { "message": "Error en la solicitud" },
-  "stopped": { "message": "Detenido" },
-  "copyFailed": { "message": "Error al copiar" },
-  "optionsTitle": { "message": "Ajustes de AskAI" },
-  "optionsHint": { "message": "Los cambios se aplican al instante. La clave API y el endpoint no se configuran aquí." },
-  "labelModel": { "message": "Modelo" },
-  "labelEffort": { "message": "Profundidad de razonamiento" },
-  "effortPlaceholder": { "message": "low / high / max; vacío = valor del modelo" },
-  "labelTemperature": { "message": "Temperatura" },
-  "labelMaxTokens": { "message": "max_tokens" },
-  "labelSystemPrompt": { "message": "Prompt del sistema" },
-  "labelRequestOptions": { "message": "request_options (avanzado, JSON)" },
-  "save": { "message": "Guardar" },
-  "statusReading": { "message": "Cargando…" },
-  "statusProxyDown": { "message": "No se puede conectar al proxy local. ¿Está activo askai.service?" },
-  "statusSaving": { "message": "Guardando…" },
-  "statusSaved": { "message": "Guardado. Aplicado al instante." },
-  "statusInvalidJson": { "message": "request_options no es JSON válido" },
-  "optionsFoot": { "message": "Key / base_url / extra_headers se siguen gestionando en ~/.config/askai/config.json" },
-  "errProxyDown": { "message": "No se puede conectar al proxy local 127.0.0.1:8787. Inicia proxy/server.py." },
-  "errHttp": { "message": "El proxy local devolvió HTTP $STATUS$", "placeholders": { "status": { "content": "$1" } } },
-  "errNoStream": { "message": "El proxy local no devolvió una respuesta en streaming" },
-  "errUpstream": { "message": "Error del servicio upstream" }
+  "extensionName": {
+    "message": "AskAI Selección"
+  },
+  "extensionDescription": {
+    "message": "Selecciona texto y pregunta a tu propia IA. Respuestas en streaming; la clave API permanece en un proxy local y nunca entra en el navegador."
+  },
+  "pillTitle": {
+    "message": "Preguntar a la IA (Alt+Mayús+A)"
+  },
+  "panelLabel": {
+    "message": "AskAI"
+  },
+  "settings": {
+    "message": "Ajustes"
+  },
+  "stop": {
+    "message": "Detener"
+  },
+  "copy": {
+    "message": "Copiar"
+  },
+  "close": {
+    "message": "Cerrar"
+  },
+  "generating": {
+    "message": "Generando…"
+  },
+  "disconnected": {
+    "message": "Conexión perdida"
+  },
+  "requestFailed": {
+    "message": "Error en la solicitud"
+  },
+  "stopped": {
+    "message": "Detenido"
+  },
+  "copyFailed": {
+    "message": "Error al copiar"
+  },
+  "optionsTitle": {
+    "message": "Ajustes de AskAI"
+  },
+  "optionsHint": {
+    "message": "Los cambios se aplican al instante. La clave API y el endpoint no se configuran aquí."
+  },
+  "labelModel": {
+    "message": "Modelo"
+  },
+  "labelEffort": {
+    "message": "Profundidad de razonamiento"
+  },
+  "effortPlaceholder": {
+    "message": "low / high / max; vacío = valor del modelo"
+  },
+  "labelTemperature": {
+    "message": "Temperatura"
+  },
+  "labelMaxTokens": {
+    "message": "max_tokens"
+  },
+  "labelSystemPrompt": {
+    "message": "Prompt del sistema"
+  },
+  "labelRequestOptions": {
+    "message": "request_options (avanzado, JSON)"
+  },
+  "save": {
+    "message": "Guardar"
+  },
+  "statusReading": {
+    "message": "Cargando…"
+  },
+  "statusProxyDown": {
+    "message": "No se puede conectar al proxy local. ¿Está activo askai.service?"
+  },
+  "statusSaving": {
+    "message": "Guardando…"
+  },
+  "statusSaved": {
+    "message": "Guardado. Aplicado al instante."
+  },
+  "statusInvalidJson": {
+    "message": "request_options no es JSON válido"
+  },
+  "optionsFoot": {
+    "message": "Key / base_url / extra_headers se siguen gestionando en ~/.config/askai/config.json"
+  },
+  "errProxyDown": {
+    "message": "No se puede conectar al proxy local 127.0.0.1:8787. Inicia proxy/server.py."
+  },
+  "errHttp": {
+    "message": "La solicitud falló: HTTP $STATUS$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "errNoStream": {
+    "message": "No hay respuesta en streaming"
+  },
+  "errUpstream": {
+    "message": "Error del servicio upstream"
+  },
+  "settingsMode": {
+    "message": "Conexión"
+  },
+  "modeProxy": {
+    "message": "Proxy local (recomendado)"
+  },
+  "modeDirect": {
+    "message": "Directo desde el navegador (clave en el navegador)"
+  },
+  "directWarning": {
+    "message": "El modo directo guarda la clave API sin cifrar en el almacenamiento de la extensión. Usa una clave aparte con poca cuota; el proxy local sigue siendo la opción más segura. Para Ollama local, usa el modo proxy."
+  },
+  "labelProvider": {
+    "message": "Proveedor"
+  },
+  "labelApiKey": {
+    "message": "Clave API"
+  },
+  "apiKeyPlaceholder": {
+    "message": "sk-..."
+  },
+  "directFoot": {
+    "message": "El modo directo usa el endpoint fijo del proveedor; la clave solo se guarda en el almacenamiento de esta extensión."
+  },
+  "statusDirectSaved": {
+    "message": "Guardado en el navegador. Se aplica de inmediato."
+  },
+  "statusNeedKey": {
+    "message": "El modo directo necesita una clave API"
+  },
+  "statusNeedModel": {
+    "message": "El modelo no puede estar vacío"
+  },
+  "errDirectConfig": {
+    "message": "Configuración del modo directo no válida. Elige un proveedor en los ajustes."
+  },
+  "errProviderDown": {
+    "message": "No se puede conectar con el proveedor. Revisa la red, la URL base o la clave."
+  },
+  "errEmptySelection": {
+    "message": "No hay texto seleccionado"
+  }
 }

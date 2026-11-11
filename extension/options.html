@@ -31,13 +31,26 @@
   form { display: flex; flex-direction: column; gap: 14px; }
   label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); }
   .row { display: grid; grid-template-columns: 1.4fr .8fr .8fr; gap: 12px; }
-  input, textarea {
+  input, textarea, select {
     width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px;
     background: var(--input); color: var(--fg);
     font: 13px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans SC", sans-serif;
   }
   textarea { resize: vertical; min-height: 84px; }
-  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  fieldset {
+    margin: 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+  }
+  legend { padding: 0 6px; color: var(--muted); font-size: 12px; }
+  fieldset label { flex-direction: row; align-items: center; gap: 8px; color: var(--fg); font-size: 13px; }
+  fieldset label + label { margin-top: 6px; }
+  .direct {
+    display: flex; flex-direction: column; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--input);
+  }
+  .row.two { grid-template-columns: 1fr 1fr; }
+  .warn { margin: 0; color: var(--muted); font-size: 11.5px; line-height: 1.55; }
+  [hidden] { display: none !important; }
   .actions { display: flex; align-items: center; gap: 12px; }
   button {
     padding: 7px 16px; border: 0; border-radius: 9px; cursor: pointer;
@@ -52,8 +65,27 @@
 <body>
 <main>
   <h1 data-i18n="optionsTitle">AskAI 设置</h1>
-  <p class="hint" data-i18n="optionsHint">保存后立即生效。API Key 与接口地址不在这里配置，避免扩展接触密钥。</p>
+  <p class="hint" id="hint" data-i18n="optionsHint">保存后立即生效。API Key 与接口地址不在这里配置，避免扩展接触密钥。</p>
   <form id="form">
+    <fieldset>
+      <legend data-i18n="settingsMode">连接方式</legend>
+      <label><input type="radio" name="mode" value="proxy" checked> <span data-i18n="modeProxy">本机代理（推荐）</span></label>
+      <label><input type="radio" name="mode" value="direct"> <span data-i18n="modeDirect">浏览器直连（key 存在浏览器）</span></label>
+    </fieldset>
+    <div id="directBox" class="direct" hidden>
+      <div class="row two">
+        <label><span data-i18n="labelProvider">服务商</span>
+          <select id="provider">
+            <option value="deepseek">DeepSeek</option>
+            <option value="openai">OpenAI</option>
+            <option value="openrouter">OpenRouter</option>
+          </select>
+        </label>
+        <label><span data-i18n="labelApiKey">API Key</span>
+          <input id="direct_key" type="password" autocomplete="off" spellcheck="false" data-i18n-placeholder="apiKeyPlaceholder" placeholder="sk-...（Ollama 可留空）">
+        </label>
+      </div>
+    </div>
     <label><span data-i18n="labelModel">模型</span>
       <input id="model" autocomplete="off" spellcheck="false">
     </label>
@@ -79,7 +111,7 @@
       <span id="status" role="status"></span>
     </div>
   </form>
-  <p class="foot" data-i18n="optionsFoot">Key / base_url / extra_headers 仍由 ~/.config/askai/config.json 管理</p>
+  <p class="foot" id="foot" data-i18n="optionsFoot">Key / base_url / extra_headers 仍由 ~/.config/askai/config.json 管理</p>
 </main>
 <script src="options.js"></script>
 </body>

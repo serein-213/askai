@@ -1,35 +1,148 @@
 {
-  "extensionName": { "message": "AskAI 划词" },
-  "extensionDescription": { "message": "选中文本，流式询问 AI；API Key 只保存在本机代理，不进入浏览器。" },
-  "pillTitle": { "message": "询问 AI（Alt+Shift+A）" },
-  "panelLabel": { "message": "AskAI" },
-  "settings": { "message": "设置" },
-  "stop": { "message": "停止" },
-  "copy": { "message": "复制" },
-  "close": { "message": "关闭" },
-  "generating": { "message": "正在生成" },
-  "disconnected": { "message": "连接中断" },
-  "requestFailed": { "message": "请求失败" },
-  "stopped": { "message": "已停止" },
-  "copyFailed": { "message": "复制失败" },
-  "optionsTitle": { "message": "AskAI 设置" },
-  "optionsHint": { "message": "保存后立即生效。API Key 与接口地址不在这里配置，避免扩展接触密钥。" },
-  "labelModel": { "message": "模型" },
-  "labelEffort": { "message": "思考深度" },
-  "effortPlaceholder": { "message": "low / high / max，留空用模型默认" },
-  "labelTemperature": { "message": "温度" },
-  "labelMaxTokens": { "message": "max_tokens" },
-  "labelSystemPrompt": { "message": "系统提示词" },
-  "labelRequestOptions": { "message": "request_options（高级，JSON）" },
-  "save": { "message": "保存" },
-  "statusReading": { "message": "读取中…" },
-  "statusProxyDown": { "message": "连不上本地代理，请确认 askai.service 已启动" },
-  "statusSaving": { "message": "保存中…" },
-  "statusSaved": { "message": "已保存，立即生效" },
-  "statusInvalidJson": { "message": "request_options 不是合法 JSON" },
-  "optionsFoot": { "message": "Key / base_url / extra_headers 仍由 ~/.config/askai/config.json 管理" },
-  "errProxyDown": { "message": "连不上本地代理 127.0.0.1:8787，请先启动 proxy/server.py" },
-  "errHttp": { "message": "本地代理返回 HTTP $STATUS$", "placeholders": { "status": { "content": "$1" } } },
-  "errNoStream": { "message": "本地代理没有返回可流式读取的响应" },
-  "errUpstream": { "message": "上游错误" }
+  "extensionName": {
+    "message": "AskAI 划词"
+  },
+  "extensionDescription": {
+    "message": "选中文本，流式询问 AI；API Key 只保存在本机代理，不进入浏览器。"
+  },
+  "pillTitle": {
+    "message": "询问 AI（Alt+Shift+A）"
+  },
+  "panelLabel": {
+    "message": "AskAI"
+  },
+  "settings": {
+    "message": "设置"
+  },
+  "stop": {
+    "message": "停止"
+  },
+  "copy": {
+    "message": "复制"
+  },
+  "close": {
+    "message": "关闭"
+  },
+  "generating": {
+    "message": "正在生成"
+  },
+  "disconnected": {
+    "message": "连接中断"
+  },
+  "requestFailed": {
+    "message": "请求失败"
+  },
+  "stopped": {
+    "message": "已停止"
+  },
+  "copyFailed": {
+    "message": "复制失败"
+  },
+  "optionsTitle": {
+    "message": "AskAI 设置"
+  },
+  "optionsHint": {
+    "message": "保存后立即生效。API Key 与接口地址不在这里配置，避免扩展接触密钥。"
+  },
+  "labelModel": {
+    "message": "模型"
+  },
+  "labelEffort": {
+    "message": "思考深度"
+  },
+  "effortPlaceholder": {
+    "message": "low / high / max，留空用模型默认"
+  },
+  "labelTemperature": {
+    "message": "温度"
+  },
+  "labelMaxTokens": {
+    "message": "max_tokens"
+  },
+  "labelSystemPrompt": {
+    "message": "系统提示词"
+  },
+  "labelRequestOptions": {
+    "message": "request_options（高级，JSON）"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "statusReading": {
+    "message": "读取中…"
+  },
+  "statusProxyDown": {
+    "message": "连不上本地代理，请确认 askai.service 已启动"
+  },
+  "statusSaving": {
+    "message": "保存中…"
+  },
+  "statusSaved": {
+    "message": "已保存，立即生效"
+  },
+  "statusInvalidJson": {
+    "message": "request_options 不是合法 JSON"
+  },
+  "optionsFoot": {
+    "message": "Key / base_url / extra_headers 仍由 ~/.config/askai/config.json 管理"
+  },
+  "errProxyDown": {
+    "message": "连不上本地代理 127.0.0.1:8787，请先启动 proxy/server.py"
+  },
+  "errHttp": {
+    "message": "请求失败：HTTP $STATUS$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "errNoStream": {
+    "message": "没有可流式读取的响应"
+  },
+  "errUpstream": {
+    "message": "上游错误"
+  },
+  "settingsMode": {
+    "message": "连接方式"
+  },
+  "modeProxy": {
+    "message": "本机代理（推荐）"
+  },
+  "modeDirect": {
+    "message": "浏览器直连（key 存在浏览器）"
+  },
+  "directWarning": {
+    "message": "直连会把 API Key 保存在浏览器扩展存储中（未加密）。建议使用单独的低额度 key；本机代理仍是最安全的模式。本地 Ollama 请使用本机代理。"
+  },
+  "labelProvider": {
+    "message": "服务商"
+  },
+  "labelApiKey": {
+    "message": "API Key"
+  },
+  "apiKeyPlaceholder": {
+    "message": "sk-..."
+  },
+  "directFoot": {
+    "message": "直连模式使用服务商固定接口；key 只保存在此浏览器的扩展存储。"
+  },
+  "statusDirectSaved": {
+    "message": "已保存到浏览器，立即生效"
+  },
+  "statusNeedKey": {
+    "message": "直连模式需要 API Key"
+  },
+  "statusNeedModel": {
+    "message": "模型不能为空"
+  },
+  "errDirectConfig": {
+    "message": "直连配置无效，请在设置里重新选择服务商"
+  },
+  "errProviderDown": {
+    "message": "连不上服务商，请检查网络、接口地址或 key"
+  },
+  "errEmptySelection": {
+    "message": "没有选中文本"
+  }
 }

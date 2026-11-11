@@ -19,6 +19,8 @@ Security:
 
 from __future__ import annotations
 
+import argparse
+import getpass
 import json
 import os
 import re
@@ -35,12 +37,15 @@ HOST = "127.0.0.1"
 PORT = 8787
 MAX_BODY = 64 * 1024
 
-CONFIG_PATH = Path(
-    os.environ.get(
-        "ASKAI_CONFIG",
-        Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "askai" / "config.json",
-    )
-)
+def _default_config_path() -> Path:
+    if os.name == "nt":
+        appdata = os.environ.get("APPDATA")
+        root = Path(appdata) if appdata else Path.home() / "AppData" / "Roaming"
+        return root / "askai" / "config.json"
+    return Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "askai" / "config.json"
+
+
+CONFIG_PATH = Path(os.environ.get("ASKAI_CONFIG", _default_config_path()))
 
 DEFAULT_PROMPT = (
     "你是浏览器划词助手。用户会发来网页里选中的一段文本。"
@@ -54,12 +59,16 @@ SETTINGS_LOCK = threading.Lock()
 
 def save_config(cfg: dict[str, Any]) -> None:
     directory = CONFIG_PATH.parent
+    directory.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=directory, prefix=".config.")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             json.dump(cfg, fh, ensure_ascii=False, indent=2)
             fh.write("\n")
-        os.chmod(tmp, 0o600)
+        try:
+            os.chmod(tmp, 0o600)
+        except OSError:
+            pass
         os.replace(tmp, CONFIG_PATH)
     finally:
         if os.path.exists(tmp):
@@ -73,7 +82,7 @@ def die(message: str) -> NoReturn:
 
 def load_config() -> dict[str, Any]:
     if not CONFIG_PATH.is_file():
-        die(f"找不到配置文件：{CONFIG_PATH}\n先运行 ./install.sh 生成配置。")
+        die(f"找不到配置文件：{CONFIG_PATH}\n先运行 askai-proxy.exe --set-key（或 ./install.sh）生成配置。")
     try:
         cfg = json.loads(CONFIG_PATH.read_text("utf-8"))
     except (OSError, ValueError) as exc:
@@ -105,12 +114,13 @@ def load_config() -> dict[str, Any]:
     if effort is not None and not isinstance(effort, str):
         die('upstream.reasoning_effort 必须是字符串，例如 "low"')
 
-    try:
-        mode = CONFIG_PATH.stat().st_mode & 0o777
-    except OSError:
-        mode = 0o600
-    if mode & 0o077:
-        print(f"askai: 警告：{CONFIG_PATH} 权限为 {mode:o}，建议 chmod 600", file=sys.stderr)
+    if os.name != "nt":
+        try:
+            mode = CONFIG_PATH.stat().st_mode & 0o777
+        except OSError:
+            mode = 0o600
+        if mode & 0o077:
+            print(f"askai: 警告：{CONFIG_PATH} 权限为 {mode:o}，建议 chmod 600", file=sys.stderr)
 
     cfg["system_prompt"] = str(cfg.get("system_prompt") or DEFAULT_PROMPT)
     cfg["max_selection_chars"] = max(200, int(cfg.get("max_selection_chars", 8000)))
@@ -145,7 +155,8 @@ class Handler(BaseHTTPRequestHandler):
     def _host_allowed(self) -> bool:
         # Reject DNS-rebinding style requests: only the loopback names we bind.
         host = (self.headers.get("Host") or "").lower()
-        return host in {"127.0.0.1:8787", "localhost:8787"}
+        port = self.server.server_port
+        return host in {f"127.0.0.1:{port}", f"localhost:{port}"}
 
     def _origin_allowed(self) -> bool:
         origin = self.headers.get("Origin")
@@ -486,7 +497,66 @@ class Handler(BaseHTTPRequestHandler):
         return self._content_from_obj(obj)
 
 
+def _default_config(api_key: str) -> dict[str, Any]:
+    return {
+        "upstream": {
+            "base_url": "https://api.deepseek.com/v1",
+            "api_key": api_key,
+            "model": "deepseek-chat",
+            "reasoning_effort": None,
+            "temperature": 0.3,
+            "max_tokens": 1200,
+            "timeout_seconds": 120,
+            "request_options": {},
+        },
+        "system_prompt": DEFAULT_PROMPT,
+        "max_selection_chars": 8000,
+    }
+
+
+def set_key() -> None:
+    key = getpass.getpass("API Key（输入不回显）: ").strip()
+    if not key:
+        die("API Key 不能为空")
+    if CONFIG_PATH.is_file():
+        try:
+            cfg = json.loads(CONFIG_PATH.read_text("utf-8"))
+        except (OSError, ValueError) as exc:
+            die(f"配置读取失败：{exc}")
+        if not isinstance(cfg, dict):
+            die("配置必须是 JSON 对象")
+        upstream = cfg.get("upstream")
+        if not isinstance(upstream, dict):
+            upstream = {}
+            cfg["upstream"] = upstream
+        upstream["api_key"] = key
+    else:
+        cfg = _default_config(key)
+    try:
+        save_config(cfg)
+    except OSError as exc:
+        die(f"写入配置失败：{exc}")
+    print(f"已写入 {CONFIG_PATH}")
+    print("启动代理：askai-proxy.exe")
+
+
 def main() -> None:
+    global CONFIG_PATH, PORT
+    parser = argparse.ArgumentParser(description="AskAI local proxy")
+    parser.add_argument("--config", help="配置文件路径")
+    parser.add_argument("--set-key", action="store_true", help="无回显录入 API Key 后退出")
+    parser.add_argument("--port", type=int, default=PORT, help="监听端口，默认 8787")
+    args = parser.parse_args()
+
+    if args.config:
+        CONFIG_PATH = Path(args.config).expanduser()
+    if not 1 <= args.port <= 65535:
+        die("端口必须在 1–65535 之间")
+    PORT = args.port
+    if args.set_key:
+        set_key()
+        return
+
     cfg = load_config()
     Handler.cfg = cfg
     try:

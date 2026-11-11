@@ -1,4 +1,11 @@
-选中网页文字 → **✦ AI** → 流式答案。API Key 只保存在本机代理，不进入浏览器。
+选中网页文字 → **✦ AI** → 流式答案。默认 API Key 只保存在本机代理；可选直连模式下 key 存在浏览器扩展存储。
+
+## 1.3.0
+
+- Windows 默认后端：单文件 `askai-proxy.exe`，`--set-key` 无回显录入，配置在 `%APPDATA%\askai\config.json`；GitHub Actions `windows-latest` 构建与健康检查。
+- 新增可选直连模式：DeepSeek / OpenAI / OpenRouter；key 存在浏览器扩展存储，仅 background 使用。本机 Ollama 仍走代理模式。
+- 新增 `storage` 权限与三家 API 的 host 权限；默认仍是本机代理。
+- 实测：Chrome 157 下代理/直连、DeepSeek 401 错误路径、35 秒慢流、设置页与快捷键；Windows 代理由 CI 冒烟。
 
 ## 1.2.0
 

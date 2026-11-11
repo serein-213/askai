@@ -1,35 +1,148 @@
 {
-  "extensionName": { "message": "AskAI Selection" },
-  "extensionDescription": { "message": "Select text to ask your own AI. Streaming answers; the API key stays in a local proxy, never in the browser." },
-  "pillTitle": { "message": "Ask AI (Alt+Shift+A)" },
-  "panelLabel": { "message": "AskAI" },
-  "settings": { "message": "Settings" },
-  "stop": { "message": "Stop" },
-  "copy": { "message": "Copy" },
-  "close": { "message": "Close" },
-  "generating": { "message": "Generating…" },
-  "disconnected": { "message": "Connection lost" },
-  "requestFailed": { "message": "Request failed" },
-  "stopped": { "message": "Stopped" },
-  "copyFailed": { "message": "Copy failed" },
-  "optionsTitle": { "message": "AskAI Settings" },
-  "optionsHint": { "message": "Changes apply immediately. The API key and endpoint are not configured here." },
-  "labelModel": { "message": "Model" },
-  "labelEffort": { "message": "Reasoning effort" },
-  "effortPlaceholder": { "message": "low / high / max; leave empty for model default" },
-  "labelTemperature": { "message": "Temperature" },
-  "labelMaxTokens": { "message": "max_tokens" },
-  "labelSystemPrompt": { "message": "System prompt" },
-  "labelRequestOptions": { "message": "request_options (advanced, JSON)" },
-  "save": { "message": "Save" },
-  "statusReading": { "message": "Loading…" },
-  "statusProxyDown": { "message": "Cannot reach the local proxy. Is askai.service running?" },
-  "statusSaving": { "message": "Saving…" },
-  "statusSaved": { "message": "Saved. Applied immediately." },
-  "statusInvalidJson": { "message": "request_options is not valid JSON" },
-  "optionsFoot": { "message": "Key / base_url / extra_headers are still managed in ~/.config/askai/config.json" },
-  "errProxyDown": { "message": "Cannot reach the local proxy at 127.0.0.1:8787. Start proxy/server.py." },
-  "errHttp": { "message": "Local proxy returned HTTP $STATUS$", "placeholders": { "status": { "content": "$1" } } },
-  "errNoStream": { "message": "The local proxy did not return a streamable response" },
-  "errUpstream": { "message": "Upstream error" }
+  "extensionName": {
+    "message": "AskAI Selection"
+  },
+  "extensionDescription": {
+    "message": "Select text to ask your own AI. Streaming answers; the API key stays in a local proxy, never in the browser."
+  },
+  "pillTitle": {
+    "message": "Ask AI (Alt+Shift+A)"
+  },
+  "panelLabel": {
+    "message": "AskAI"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "stop": {
+    "message": "Stop"
+  },
+  "copy": {
+    "message": "Copy"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "generating": {
+    "message": "Generating…"
+  },
+  "disconnected": {
+    "message": "Connection lost"
+  },
+  "requestFailed": {
+    "message": "Request failed"
+  },
+  "stopped": {
+    "message": "Stopped"
+  },
+  "copyFailed": {
+    "message": "Copy failed"
+  },
+  "optionsTitle": {
+    "message": "AskAI Settings"
+  },
+  "optionsHint": {
+    "message": "Changes apply immediately. The API key and endpoint are not configured here."
+  },
+  "labelModel": {
+    "message": "Model"
+  },
+  "labelEffort": {
+    "message": "Reasoning effort"
+  },
+  "effortPlaceholder": {
+    "message": "low / high / max; leave empty for model default"
+  },
+  "labelTemperature": {
+    "message": "Temperature"
+  },
+  "labelMaxTokens": {
+    "message": "max_tokens"
+  },
+  "labelSystemPrompt": {
+    "message": "System prompt"
+  },
+  "labelRequestOptions": {
+    "message": "request_options (advanced, JSON)"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "statusReading": {
+    "message": "Loading…"
+  },
+  "statusProxyDown": {
+    "message": "Cannot reach the local proxy. Is askai.service running?"
+  },
+  "statusSaving": {
+    "message": "Saving…"
+  },
+  "statusSaved": {
+    "message": "Saved. Applied immediately."
+  },
+  "statusInvalidJson": {
+    "message": "request_options is not valid JSON"
+  },
+  "optionsFoot": {
+    "message": "Key / base_url / extra_headers are still managed in ~/.config/askai/config.json"
+  },
+  "errProxyDown": {
+    "message": "Cannot reach the local proxy at 127.0.0.1:8787. Start proxy/server.py."
+  },
+  "errHttp": {
+    "message": "Request failed: HTTP $STATUS$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "errNoStream": {
+    "message": "No streamable response"
+  },
+  "errUpstream": {
+    "message": "Upstream error"
+  },
+  "settingsMode": {
+    "message": "Connection"
+  },
+  "modeProxy": {
+    "message": "Local proxy (recommended)"
+  },
+  "modeDirect": {
+    "message": "Direct from browser (key stored in browser)"
+  },
+  "directWarning": {
+    "message": "Direct mode stores the API key unencrypted in extension storage. Use a separate low-quota key; the local proxy remains the safest option. For local Ollama, use proxy mode."
+  },
+  "labelProvider": {
+    "message": "Provider"
+  },
+  "labelApiKey": {
+    "message": "API Key"
+  },
+  "apiKeyPlaceholder": {
+    "message": "sk-..."
+  },
+  "directFoot": {
+    "message": "Direct mode uses the provider's fixed endpoint; the key is stored only in this browser's extension storage."
+  },
+  "statusDirectSaved": {
+    "message": "Saved in the browser. Applied immediately."
+  },
+  "statusNeedKey": {
+    "message": "Direct mode needs an API key"
+  },
+  "statusNeedModel": {
+    "message": "Model cannot be empty"
+  },
+  "errDirectConfig": {
+    "message": "Invalid direct-mode configuration. Choose a provider in settings."
+  },
+  "errProviderDown": {
+    "message": "Cannot reach the provider. Check the network, base URL or key."
+  },
+  "errEmptySelection": {
+    "message": "No text selected"
+  }
 }

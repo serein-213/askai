@@ -1,35 +1,148 @@
 {
-  "extensionName": { "message": "AskAI Выделение" },
-  "extensionDescription": { "message": "Выделите текст и спросите свою ИИ. Ответы отображаются потоково; ключ API остаётся в локальном прокси и не попадает в браузер." },
-  "pillTitle": { "message": "Спросить ИИ (Alt+Shift+A)" },
-  "panelLabel": { "message": "AskAI" },
-  "settings": { "message": "Настройки" },
-  "stop": { "message": "Остановить" },
-  "copy": { "message": "Копировать" },
-  "close": { "message": "Закрыть" },
-  "generating": { "message": "Генерация…" },
-  "disconnected": { "message": "Соединение потеряно" },
-  "requestFailed": { "message": "Ошибка запроса" },
-  "stopped": { "message": "Остановлено" },
-  "copyFailed": { "message": "Не удалось скопировать" },
-  "optionsTitle": { "message": "Настройки AskAI" },
-  "optionsHint": { "message": "Изменения применяются сразу. Ключ API и endpoint здесь не настраиваются." },
-  "labelModel": { "message": "Модель" },
-  "labelEffort": { "message": "Глубина рассуждений" },
-  "effortPlaceholder": { "message": "low / high / max; пусто = значение модели" },
-  "labelTemperature": { "message": "Температура" },
-  "labelMaxTokens": { "message": "max_tokens" },
-  "labelSystemPrompt": { "message": "Системный промпт" },
-  "labelRequestOptions": { "message": "request_options (дополнительно, JSON)" },
-  "save": { "message": "Сохранить" },
-  "statusReading": { "message": "Загрузка…" },
-  "statusProxyDown": { "message": "Локальный прокси недоступен. askai.service запущен?" },
-  "statusSaving": { "message": "Сохранение…" },
-  "statusSaved": { "message": "Сохранено. Применено сразу." },
-  "statusInvalidJson": { "message": "request_options — неверный JSON" },
-  "optionsFoot": { "message": "Key / base_url / extra_headers по-прежнему задаются в ~/.config/askai/config.json" },
-  "errProxyDown": { "message": "Локальный прокси 127.0.0.1:8787 недоступен. Запустите proxy/server.py." },
-  "errHttp": { "message": "Локальный прокси вернул HTTP $STATUS$", "placeholders": { "status": { "content": "$1" } } },
-  "errNoStream": { "message": "Локальный прокси не вернул потоковый ответ" },
-  "errUpstream": { "message": "Ошибка вышестоящего сервиса" }
+  "extensionName": {
+    "message": "AskAI Выделение"
+  },
+  "extensionDescription": {
+    "message": "Выделите текст и спросите свою ИИ. Ответы отображаются потоково; ключ API остаётся в локальном прокси и не попадает в браузер."
+  },
+  "pillTitle": {
+    "message": "Спросить ИИ (Alt+Shift+A)"
+  },
+  "panelLabel": {
+    "message": "AskAI"
+  },
+  "settings": {
+    "message": "Настройки"
+  },
+  "stop": {
+    "message": "Остановить"
+  },
+  "copy": {
+    "message": "Копировать"
+  },
+  "close": {
+    "message": "Закрыть"
+  },
+  "generating": {
+    "message": "Генерация…"
+  },
+  "disconnected": {
+    "message": "Соединение потеряно"
+  },
+  "requestFailed": {
+    "message": "Ошибка запроса"
+  },
+  "stopped": {
+    "message": "Остановлено"
+  },
+  "copyFailed": {
+    "message": "Не удалось скопировать"
+  },
+  "optionsTitle": {
+    "message": "Настройки AskAI"
+  },
+  "optionsHint": {
+    "message": "Изменения применяются сразу. Ключ API и endpoint здесь не настраиваются."
+  },
+  "labelModel": {
+    "message": "Модель"
+  },
+  "labelEffort": {
+    "message": "Глубина рассуждений"
+  },
+  "effortPlaceholder": {
+    "message": "low / high / max; пусто = значение модели"
+  },
+  "labelTemperature": {
+    "message": "Температура"
+  },
+  "labelMaxTokens": {
+    "message": "max_tokens"
+  },
+  "labelSystemPrompt": {
+    "message": "Системный промпт"
+  },
+  "labelRequestOptions": {
+    "message": "request_options (дополнительно, JSON)"
+  },
+  "save": {
+    "message": "Сохранить"
+  },
+  "statusReading": {
+    "message": "Загрузка…"
+  },
+  "statusProxyDown": {
+    "message": "Локальный прокси недоступен. askai.service запущен?"
+  },
+  "statusSaving": {
+    "message": "Сохранение…"
+  },
+  "statusSaved": {
+    "message": "Сохранено. Применено сразу."
+  },
+  "statusInvalidJson": {
+    "message": "request_options — неверный JSON"
+  },
+  "optionsFoot": {
+    "message": "Key / base_url / extra_headers по-прежнему задаются в ~/.config/askai/config.json"
+  },
+  "errProxyDown": {
+    "message": "Локальный прокси 127.0.0.1:8787 недоступен. Запустите proxy/server.py."
+  },
+  "errHttp": {
+    "message": "Запрос не выполнен: HTTP $STATUS$",
+    "placeholders": {
+      "status": {
+        "content": "$1"
+      }
+    }
+  },
+  "errNoStream": {
+    "message": "Нет потокового ответа"
+  },
+  "errUpstream": {
+    "message": "Ошибка вышестоящего сервиса"
+  },
+  "settingsMode": {
+    "message": "Подключение"
+  },
+  "modeProxy": {
+    "message": "Локальный прокси (рекомендуется)"
+  },
+  "modeDirect": {
+    "message": "Напрямую из браузера (ключ в браузере)"
+  },
+  "directWarning": {
+    "message": "В прямом режиме ключ API хранится в хранилище расширения без шифрования. Используйте отдельный ключ с небольшим лимитом; локальный прокси остаётся самым безопасным вариантом. Для локального Ollama используйте режим прокси."
+  },
+  "labelProvider": {
+    "message": "Провайдер"
+  },
+  "labelApiKey": {
+    "message": "Ключ API"
+  },
+  "apiKeyPlaceholder": {
+    "message": "sk-..."
+  },
+  "directFoot": {
+    "message": "Прямой режим использует фиксированную конечную точку провайдера; ключ хранится только в хранилище расширения этого браузера."
+  },
+  "statusDirectSaved": {
+    "message": "Сохранено в браузере. Применяется сразу."
+  },
+  "statusNeedKey": {
+    "message": "Для прямого режима нужен ключ API"
+  },
+  "statusNeedModel": {
+    "message": "Модель не может быть пустой"
+  },
+  "errDirectConfig": {
+    "message": "Неверная конфигурация прямого режима. Выберите провайдера в настройках."
+  },
+  "errProviderDown": {
+    "message": "Не удаётся подключиться к провайдеру. Проверьте сеть, базовый URL или ключ."
+  },
+  "errEmptySelection": {
+    "message": "Текст не выделен"
+  }
 }
