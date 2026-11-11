@@ -40,28 +40,7 @@ systemctl --user status askai
 2. 装扩展：
 
 - 临时载入：Firefox 打开 `about:debugging#/runtime/this-firefox` → 「临时载入附加组件」→ 选 `~/askai/extension/manifest.json`（重启 Firefox 后需重做）。
-- 永久安装需 AMO 签名。`WEB_EXT_API_KEY` / `WEB_EXT_API_SECRET` 是 addons.mozilla.org 的个人签名凭据（JWT issuer / secret），在 [Developer Hub → Tools → API keys](https://addons.mozilla.org/developers/addon/api/key/) 生成，可随时吊销；它**不是**模型 API key。
-
-```bash
-./sign.sh      # 提示输入 AMO key/secret（不回显，不进 shell history）
-# 等价于（已 export 凭据时）：
-npx web-ext sign --source-dir extension --channel unlisted --artifacts-dir dist
-```
-
-签名会把扩展源码上传到 AMO（`unlisted` 仅用于取回签名包，不公开列出）。不签名也能用，只是每次启动 Firefox 后要临时载入一次。
-
-同一 add-on 已存在后，网页端只能用该 add-on 的「Upload New Version」；「Submit a New Add-on」会报重复 add-on ID。
-
-### 上架 AMO 获取一键安装
-
-AMO 允许同一个 add-on 混合 listed / unlisted 版本，版本号跨渠道唯一。不要删条目、不要换 ID：
-
-1. 打开 <https://addons.mozilla.org/en-US/developers/addon/bae6813623aa40829c79/versions>
-2. **Upload New Version**，上传 `dist/askai_-1.0.1.zip`，渠道选 **Listed / On this site**
-3. 首次 listed 需补 listing 信息（summary、description、分类）与隐私政策：<https://github.com/serein-213/askai/blob/main/PRIVACY.md>
-4. 审核通过后，AMO 列表页的「Add to Firefox」就是一键安装链接
-
-1.0.0 已被 unlisted 占用，所以 listed 版是 1.0.1。
+- 永久安装需 AMO 签名：运行 `./sign.sh`，按提示输入 AMO 凭据（不回显）。不签名也能用，只是每次启动 Firefox 后要临时载入一次。
 
 ## 使用
 
