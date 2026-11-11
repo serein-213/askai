@@ -40,14 +40,17 @@ systemctl --user status askai
 2. 装扩展：
 
 - 临时载入：Firefox 打开 `about:debugging#/runtime/this-firefox` → 「临时载入附加组件」→ 选 `~/askai/extension/manifest.json`（重启 Firefox 后需重做）。
-- 永久安装需签名（AMO 账号 → Tools → API keys）：
+- 永久安装需 AMO 签名。`WEB_EXT_API_KEY` / `WEB_EXT_API_SECRET` 是 addons.mozilla.org 的个人签名凭据（JWT issuer / secret），在 [Developer Hub → Tools → API keys](https://addons.mozilla.org/developers/addon/api/key/) 生成，可随时吊销；它**不是**模型 API key。
 
 ```bash
+export WEB_EXT_API_KEY='user:123456:789'
+export WEB_EXT_API_SECRET='...'
 npx web-ext build --source-dir extension --artifacts-dir dist --overwrite-dest
-npx web-ext sign --channel unlisted --artifacts-dir dist \
-  --api-key "$AMO_KEY" --api-secret "$AMO_SECRET"
+npx web-ext sign --channel unlisted --artifacts-dir dist
 # 下载签名后的 xpi，用 Firefox 打开并确认安装
 ```
+
+签名会把扩展源码上传到 AMO（`unlisted` 仅用于取回签名包，不公开列出）。不签名也能用，只是每次启动 Firefox 后要临时载入一次。
 
 ## 使用
 
