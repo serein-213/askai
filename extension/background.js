@@ -5,8 +5,22 @@ const PROXY = "http://127.0.0.1:8787";
 // One port per open panel. The page only ever talks to this background page,
 // which in turn only talks to 127.0.0.1:8787.
 browser.runtime.onMessage.addListener((message) => {
-  if (message && message.type === "open-options") {
+  if (!message || typeof message !== "object") {
+    return;
+  }
+  if (message.type === "open-options") {
     browser.runtime.openOptionsPage();
+    return;
+  }
+  if (message.type === "open-url" && typeof message.url === "string") {
+    try {
+      const url = new URL(message.url);
+      if (url.protocol === "http:" || url.protocol === "https:") {
+        browser.tabs.create({ url: url.href });
+      }
+    } catch (_error) {
+      // Ignore malformed URLs.
+    }
   }
 });
 

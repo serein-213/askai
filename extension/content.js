@@ -129,6 +129,28 @@
   font: 12.5px/1.5 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 .body pre code { padding: 0; background: none; border-radius: 0; }
+.body p { margin: 0 0 8px; }
+.body p:last-child { margin-bottom: 0; }
+.body strong { font-weight: 650; }
+.body em { font-style: italic; }
+.body del { opacity: .7; }
+.body .md-h { margin: 10px 0 6px; font-weight: 650; line-height: 1.4; }
+.body .md-h1 { font-size: 17px; }
+.body .md-h2 { font-size: 15.5px; }
+.body .md-h3 { font-size: 14.5px; }
+.body .md-h4, .body .md-h5, .body .md-h6 { font-size: 13.5px; }
+.body ul, .body ol { margin: 6px 0 8px; padding-left: 20px; }
+.body li { margin: 2px 0; }
+.body blockquote {
+  margin: 8px 0; padding: 4px 10px; color: var(--muted);
+  border-left: 3px solid var(--border);
+}
+.body hr { margin: 10px 0; border: 0; border-top: 1px solid var(--border); }
+.body .md-link {
+  color: var(--accent); text-decoration: underline; text-underline-offset: 2px;
+  cursor: pointer; border-radius: 3px;
+}
+.body .md-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .caret {
   display: inline-block; width: 5px; height: 13px; margin-left: 2px;
   border-radius: 2px; background: var(--accent); vertical-align: -2px;
@@ -459,51 +481,194 @@
     });
   }
 
+  const INLINE = /(`[^`\n]+`)|(\*\*[^*\n]+\*\*)|(\*[^*\n]+\*)|(~~[^~\n]+~~)|(\[[^\]\n]+\]\(https?:\/\/[^\s)]+\))/;
+
+  function makeLink(label, url) {
+    const node = el("span", "md-link");
+    node.setAttribute("role", "link");
+    node.setAttribute("tabindex", "0");
+    node.title = url;
+    appendInline(node, label);
+    const open = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      try {
+        browser.runtime.sendMessage({ type: "open-url", url });
+      } catch (_error) {
+        // Background is not available.
+      }
+    };
+    node.addEventListener("click", open);
+    node.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        open(event);
+      }
+    });
+    return node;
+  }
+
+  function appendInline(parent, text) {
+    const re = new RegExp(INLINE.source, "g");
+    let last = 0;
+    let match;
+    while ((match = re.exec(text))) {
+      if (match.index > last) {
+        parent.appendChild(document.createTextNode(text.slice(last, match.index)));
+      }
+      const token = match[0];
+      if (token.startsWith("`")) {
+        const code = document.createElement("code");
+        code.textContent = token.slice(1, -1);
+        parent.appendChild(code);
+      } else if (token.startsWith("**")) {
+        const strong = document.createElement("strong");
+        appendInline(strong, token.slice(2, -2));
+        parent.appendChild(strong);
+      } else if (token.startsWith("~~")) {
+        const del = document.createElement("del");
+        appendInline(del, token.slice(2, -2));
+        parent.appendChild(del);
+      } else if (token.startsWith("[")) {
+        const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+        if (link) {
+          parent.appendChild(makeLink(link[1], link[2]));
+        } else {
+          parent.appendChild(document.createTextNode(token));
+        }
+      } else {
+        const em = document.createElement("em");
+        appendInline(em, token.slice(1, -1));
+        parent.appendChild(em);
+      }
+      last = re.lastIndex;
+    }
+    if (last < text.length) {
+      parent.appendChild(document.createTextNode(text.slice(last)));
+    }
+  }
+
   function render(text) {
     const stickToBottom =
       bodyEl.scrollHeight - bodyEl.scrollTop - bodyEl.clientHeight < 32;
     bodyEl.textContent = "";
-    const fence = /```[^\n]*\n([\s\S]*?)(?:```|$)/g;
-    let last = 0;
-    let match;
-    while ((match = fence.exec(text))) {
-      appendText(text.slice(last, match.index));
-      const pre = document.createElement("pre");
-      const code = document.createElement("code");
-      code.textContent = match[1].replace(/\n+$/, "");
-      pre.appendChild(code);
-      bodyEl.appendChild(pre);
-      last = fence.lastIndex;
+
+    const lines = text.split("\n");
+    let index = 0;
+    let paragraph = [];
+
+    const flushParagraph = () => {
+      if (!paragraph.length) {
+        return;
+      }
+      const node = document.createElement("p");
+      appendInline(node, paragraph.join("\n"));
+      bodyEl.appendChild(node);
+      paragraph = [];
+    };
+
+    while (index < lines.length) {
+      const line = lines[index];
+
+      if (/^\s*```/.test(line)) {
+        flushParagraph();
+        index += 1;
+        const code = [];
+        while (index < lines.length && !/^\s*```\s*$/.test(lines[index])) {
+          code.push(lines[index]);
+          index += 1;
+        }
+        if (index < lines.length) {
+          index += 1;
+        }
+        const pre = document.createElement("pre");
+        const block = document.createElement("code");
+        block.textContent = code.join("\n");
+        pre.appendChild(block);
+        bodyEl.appendChild(pre);
+        continue;
+      }
+
+      if (/^\s*$/.test(line)) {
+        flushParagraph();
+        index += 1;
+        continue;
+      }
+
+      const heading = line.match(/^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$/);
+      if (heading) {
+        flushParagraph();
+        const node = document.createElement("div");
+        node.className = `md-h md-h${heading[1].length}`;
+        appendInline(node, heading[2]);
+        bodyEl.appendChild(node);
+        index += 1;
+        continue;
+      }
+
+      if (/^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/.test(line)) {
+        flushParagraph();
+        bodyEl.appendChild(document.createElement("hr"));
+        index += 1;
+        continue;
+      }
+
+      if (/^\s{0,3}>\s?/.test(line)) {
+        flushParagraph();
+        const quote = [];
+        while (index < lines.length && /^\s{0,3}>\s?/.test(lines[index])) {
+          quote.push(lines[index].replace(/^\s{0,3}>\s?/, ""));
+          index += 1;
+        }
+        const node = document.createElement("blockquote");
+        appendInline(node, quote.join("\n"));
+        bodyEl.appendChild(node);
+        continue;
+      }
+
+      if (/^\s{0,3}[-*+]\s+/.test(line)) {
+        flushParagraph();
+        const list = document.createElement("ul");
+        while (index < lines.length) {
+          const item = lines[index].match(/^\s{0,3}[-*+]\s+(.*)$/);
+          if (!item) {
+            break;
+          }
+          const li = document.createElement("li");
+          appendInline(li, item[1]);
+          list.appendChild(li);
+          index += 1;
+        }
+        bodyEl.appendChild(list);
+        continue;
+      }
+
+      if (/^\s{0,3}\d+[.)]\s+/.test(line)) {
+        flushParagraph();
+        const list = document.createElement("ol");
+        while (index < lines.length) {
+          const item = lines[index].match(/^\s{0,3}\d+[.)]\s+(.*)$/);
+          if (!item) {
+            break;
+          }
+          const li = document.createElement("li");
+          appendInline(li, item[1]);
+          list.appendChild(li);
+          index += 1;
+        }
+        bodyEl.appendChild(list);
+        continue;
+      }
+
+      paragraph.push(line);
+      index += 1;
     }
-    appendText(text.slice(last));
+
+    flushParagraph();
     if (streaming) {
       bodyEl.appendChild(caretEl);
     }
     if (stickToBottom) {
       bodyEl.scrollTop = bodyEl.scrollHeight;
-    }
-  }
-
-  function appendText(chunk) {
-    if (!chunk) {
-      return;
-    }
-    const inline = /`([^`\n]+)`/g;
-    let last = 0;
-    let match;
-    while ((match = inline.exec(chunk))) {
-      addText(chunk.slice(last, match.index));
-      const code = document.createElement("code");
-      code.textContent = match[1];
-      bodyEl.appendChild(code);
-      last = inline.lastIndex;
-    }
-    addText(chunk.slice(last));
-  }
-
-  function addText(text) {
-    if (text) {
-      bodyEl.appendChild(document.createTextNode(text));
     }
   }
 
