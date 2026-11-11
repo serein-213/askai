@@ -9,18 +9,22 @@ Firefox 扩展 + 本机代理：选中网页文字 → 点 **✦ AI**（或 `Alt
 ```
 extension/   Firefox 扩展：manifest.json + background.js + content.js
 proxy/       server.py（仅 Python 标准库）+ config.example.json
-install.sh   生成 ~/.config/askai/config.json（0600）
+install.sh   生成配置（0600）与 systemd 用户单元
+set-key.sh   终端无回显录入 key，写入 0600 并启动服务
 ```
 
 ## 安装
 
-1. 配置代理：
+1. 部署代理（常驻）：
 
 ```bash
 cd ~/askai
-./install.sh
-$EDITOR ~/.config/askai/config.json     # 填入 upstream.api_key
+./install.sh        # 建配置 + systemd 用户单元
+./set-key.sh        # 终端输入 key（不回显）→ 写入 0600 → 启动服务
+systemctl --user status askai
 ```
+
+只前台跑：`python3 ~/askai/proxy/server.py`（key 仍需写入配置或环境变量）。
 
 `upstream` 兼容任意 OpenAI 格式接口：
 
@@ -33,14 +37,17 @@ $EDITOR ~/.config/askai/config.json     # 填入 upstream.api_key
 
 不想把 key 写进文件：`export ASKAI_API_KEY=sk-...`；也支持 `ASKAI_BASE_URL`、`ASKAI_MODEL` 覆盖。
 
-2. 启动代理：
+2. 装扩展：
+
+- 临时载入：Firefox 打开 `about:debugging#/runtime/this-firefox` → 「临时载入附加组件」→ 选 `~/askai/extension/manifest.json`（重启 Firefox 后需重做）。
+- 永久安装需签名（AMO 账号 → Tools → API keys）：
 
 ```bash
-python3 ~/askai/proxy/server.py
-# AskAI proxy: http://127.0.0.1:8787  model=deepseek-chat  upstream=https://api.deepseek.com/v1
+npx web-ext build --source-dir extension --artifacts-dir dist --overwrite-dest
+npx web-ext sign --channel unlisted --artifacts-dir dist \
+  --api-key "$AMO_KEY" --api-secret "$AMO_SECRET"
+# 下载签名后的 xpi，用 Firefox 打开并确认安装
 ```
-
-3. 装扩展：Firefox 打开 `about:debugging#/runtime/this-firefox` → 「临时载入附加组件」→ 选 `~/askai/extension/manifest.json`。
 
 ## 使用
 
@@ -79,28 +86,39 @@ python3 ~/askai/proxy/server.py
 
 ## 常驻运行（systemd user）
 
+`./install.sh` 写入单元并 `daemon-reload`，`./set-key.sh` 负责 `enable --now`。单元内容：
+
 ```ini
-# ~/.config/systemd/user/askai.service
 [Unit]
-Description=AskAI local proxy
+Description=AskAI local proxy (127.0.0.1:8787)
 After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
+Type=simple
 ExecStart=/usr/bin/python3 %h/askai/proxy/server.py
-Environment=ASKAI_API_KEY=sk-...
+Environment=ASKAI_CONFIG=%h/.config/askai/config.json
+Environment=PYTHONDONTWRITEBYTECODE=1
 Restart=on-failure
-RestartSec=2
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
 
 [Install]
 WantedBy=default.target
 ```
 
 ```bash
-systemctl --user daemon-reload
-systemctl --user enable --now askai
+systemctl --user status askai
+journalctl --user -u askai -n 30
+systemctl --user restart askai     # 改完配置后
 ```
 
-key 也可以放进 `~/.config/askai/env`（0600），用 `EnvironmentFile=%h/.config/askai/env` 加载。
+`set-key.sh` 通过标准输入把 key 交给 Python 原子写入配置，不经过 shell 历史；也可在单元里用 `Environment=ASKAI_API_KEY=...` 覆盖（则不读文件里的 key）。
 
 ## Key 安全设计
 
@@ -126,7 +144,8 @@ key 也可以放进 `~/.config/askai/env`（0600），用 `EnvironmentFile=%h/.c
 
 | 现象 | 原因 |
 | --- | --- |
-| 「连不上本地代理」 | 代理没启动，或端口不是 8787 |
+| 「连不上本地代理」 | 代理没启动，或端口不是 8787；`journalctl --user -u askai -n 30` |
+| 服务启动失败 | 未设置 key，或 `base_url` / 单元路径不对；看 journal |
 | 上游 401 | `upstream.api_key` 无效 |
 | 请求被 403 | 调用方不是扩展（Origin/Host 校验） |
 | 上游 404 | `base_url` 少了 `/v1`，或多了 `/chat/completions` |
