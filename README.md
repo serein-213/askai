@@ -118,7 +118,7 @@ journalctl --user -u askai -n 30
 systemctl --user restart askai     # 改完配置后
 ```
 
-`set-key.sh` 通过标准输入把 key 交给 Python 原子写入配置，不经过 shell 历史；也可在单元里用 `Environment=ASKAI_API_KEY=...` 覆盖（则不读文件里的 key）。
+`set-key.sh` 通过标准输入把 key 交给 Python 原子写入配置，不经过 shell 历史；前台运行时可用 `ASKAI_API_KEY=... python3 proxy/server.py`。不要把 key 写进 unit 文件（unit 默认 0644）。
 
 ## Key 安全设计
 
